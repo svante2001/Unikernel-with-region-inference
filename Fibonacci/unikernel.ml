@@ -1,13 +1,20 @@
 open Lwt.Infix
 
-let fibs : (int, int) Hashtbl.t = Hashtbl.create 10
-
-let rec fib n =
+(* let rec fib n =
   if n < 3 then 1
-  else fib (n - 1) + fib (n - 2)
+  else fib (n - 1) + fib (n - 2) *)
 
+let rec fib n map =
+  if n < 3 then 1
+  else if Hashtbl.mem map n then Hashtbl.find map n
+  else
+    let r = ((fib (n - 1) map) + (fib (n - 2) map)) in
+    (
+    Hashtbl.add map n r;
+    r
+    );
+  
 module Main (S : Tcpip.Stack.V4V6) = struct
-  let r = ref 0
   let start s =
     let port = Key_gen.port () in
     S.TCP.listen (S.tcp s) ~port (fun flow ->
@@ -28,16 +35,16 @@ module Main (S : Tcpip.Stack.V4V6) = struct
             Logs.debug (fun f ->
                 f "read: %d bytes:\n%s" (Cstruct.length b) (Cstruct.to_string b));
 
-            (
+            (* (
               if Hashtbl.mem fibs (int_of_string (Cstruct.to_string b))
               then r := Hashtbl.find fibs (int_of_string (Cstruct.to_string b))
               else 
                 r := (fib (int_of_string (Cstruct.to_string b)));
                 Hashtbl.add fibs (int_of_string (Cstruct.to_string b)) !r
-            );
-
-            S.TCP.write flow (Cstruct.of_string (Printf.sprintf "%d" !r)) >>= function
-
-            | _ -> S.TCP.close flow); 
+            ); *)
+            
+            let fibs : (int, int) Hashtbl.t = Hashtbl.create 10
+            S.TCP.write flow (Cstruct.of_string (Printf.sprintf "%d" (fib (int_of_string (Cstruct.to_string b)) fibs))) >>= function
+            | _ -> S.TCP.close flow);
     S.listen s
 end
