@@ -1,3 +1,0 @@
-(lang dune 1.4)
-(name cmdliner)
-(version v1.2.0+dune)
