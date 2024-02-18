@@ -1,4 +1,0 @@
-(melange.emit
- (target output)
- (alias mel)
- (libraries lib))

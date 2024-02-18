@@ -1,1 +1,0 @@
-external compute : unit -> unit = "caml_compute"

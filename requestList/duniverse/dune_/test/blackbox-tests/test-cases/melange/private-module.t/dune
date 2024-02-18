@@ -1,4 +1,0 @@
-(melange.emit
- (target private-module)
- (modules foo)
- (libraries lib))

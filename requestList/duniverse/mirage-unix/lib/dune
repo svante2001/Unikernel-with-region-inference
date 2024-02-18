@@ -1,4 +1,0 @@
-(library
-  (name unix_os)
-  (public_name mirage-unix)
-  (libraries duration lwt lwt.unix mirage-runtime))

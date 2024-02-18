@@ -1,4 +1,0 @@
-(library
- (name functoria_runtime)
- (public_name functoria-runtime)
- (libraries cmdliner))

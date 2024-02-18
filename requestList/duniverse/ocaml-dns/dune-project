@@ -1,4 +1,0 @@
-(lang dune 2.0)
-(name dns)
-(version v7.0.3)
-(formatting disabled)
