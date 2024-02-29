@@ -5,7 +5,8 @@ module Main
     (N : Mirage_net.S)
     (E : Ethernet.S)
     (I : Tcpip.Ip.S with type ipaddr = Ipaddr.V6.t)
-    (A : Arp.S) =
+    (A : Arp.S) 
+    (Ipv4 : Tcpip.Ip.S ) =
 struct
   let cs2b b =
     Cstruct.to_bytes b
@@ -13,7 +14,11 @@ struct
          (fun acc b -> acc ^ Printf.sprintf "%d " (Char.code b))
          ""
 
-  let start n _ _ _ =
+let rec fib n =
+  if n < 3 then 1
+  else (fib (n - 1)) + (fib (n - 2))
+
+  let start n _ _ _ _ =
     N.listen n ~header_size:Ethernet.Packet.sizeof_ethernet (fun b ->
         let s = cs2b b in
         Logs.info (fun f -> f "%s" s);
@@ -81,6 +86,47 @@ struct
                     Lwt.return_unit)
             | `IPv4 ->
                 Logs.info (fun f -> f "YES 4! %s" (Cstruct.to_string payload));
+                (match Ipv4_packet.Unmarshal.of_cstruct payload with 
+                | Ok(hd, payload) -> 
+                  Logs.info (fun f -> f "proto: %d, payload: %s" hd.proto (cs2b payload);
+                  match Ipv4_packet.Unmarshal.int_to_protocol hd.proto with 
+                  | Some(`ICMP) -> Logs.info (fun f -> f "ICMP!")
+                  | Some(`TCP) -> Logs.info (fun f -> f "TCP!")
+                  | Some(`UDP) -> (
+                    match Udp_packet.Unmarshal.of_cstruct payload with
+                    | Ok ({ src_port; dst_port }, payload) -> (
+                      Logs.info (fun f -> f "Got message from port: %d to port: %d with payload: %s" src_port dst_port (Cstruct.to_string payload));
+                      (* let u_hd : Udp_packet.t = {
+                        src_port = dst_port;
+                        dst_port = src_port
+                      } in
+                      let i_hd : Ipv4_packet.t = {
+                        src = hd.dst;
+                        dst = hd.src;
+                        id = 0;
+                        off = 0;
+                        ttl = 256;
+                        proto = 17;
+                        options = Cstruct.create 0;
+                      } in
+                      let e_hd : Ethernet.Packet.t = {
+                        source = N.mac n;
+                        destination = source;
+                        ethertype = `IPv4
+                      } in  *)
+                      ()
+                      (* Udp_packet.Marshal.into_cstruct
+
+                      let fib_call = fib (int_of_string (Cstruct.to_string payload))
+                      let string_to_return = Cstruct.of_string (Printf.sprintf "%d" fib_call)
+
+                      Lwt.return_unit *)
+                    )
+                    | Error s -> Logs.info (fun f -> f "Got error : %s" s) 
+                  )
+                  | None -> Logs.info (fun f -> f "Uknown protocol")
+                  )
+                | Error _ -> Logs.info (fun f -> f "Error parsing Ipv4 packet"));
                 Lwt.return_unit
             | `IPv6 ->
                 Logs.info (fun f -> f "YES 6! %s" (Cstruct.to_string payload));
