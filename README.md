@@ -10,5 +10,13 @@
 [Unikernels: Rise of the Virtual Library Operating System](https://queue.acm.org/detail.cfm?id=2566628) <br />
 
 ## Notes
-`mirage configure -t unix --net socket` <br />
+`mirage configure -t unix` <br />
 `echo -n hello tcp world | nc -nw1 127.0.0.1 8080` <br />
+
+### Setting up tuntap
+`sudo modprobe tun`
+`sudo tunctl -u $USER -t tap0`
+`sudo ifconfig tap0 10.0.0.1 up`
+
+### Monitor network interface (tap0)
+`sudo tshark -i tap0`
