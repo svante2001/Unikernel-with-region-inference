@@ -6,20 +6,16 @@
 #include <unistd.h>
 #include <string.h>
 
-#include "/home/svante/Documents/mlkit/src/Runtime/List.h"
 #include "/home/svante/Documents/mlkit/src/Runtime/String.h"
-#include "/home/svante/Documents/mlkit/src/Runtime/Exception.h"
-#include "/home/svante/Documents/mlkit/src/Runtime/Region.h"
-#include "/home/svante/Documents/mlkit/src/Runtime/Tagging.h"
 
 char file[1024];
 
 char* read_fd(int addr, String fileName, Region str_r, Context ctx) {
-    char buf[100];
+    char fileName_buf[100];
     size_t len = 100;
     uintptr_t exn = 10; // No idea what this is supposed to be but this value works.
-    convertStringToC(ctx, fileName, buf, len, exn);
-    int fd = open(buf, O_RDONLY);
+    convertStringToC(ctx, fileName, fileName_buf, len, exn);
+    int fd = open(fileName_buf, O_RDONLY);
     if (fd == -1) {
         return NULL;
     }
@@ -37,4 +33,30 @@ char* read_fd(int addr, String fileName, Region str_r, Context ctx) {
     file[bytes_read] = '\0';
 
     return convertStringToML(str_r, file);
+}
+
+int write_fd(String fileName, String toWrite, Context ctx) {
+    char fileName_buf[100];
+    size_t len = 100;
+    uintptr_t exn = 10; // No idea what this is supposed to be but this value works.
+    convertStringToC(ctx, fileName, fileName_buf, len, exn);
+
+    // Opens write only, creates if the file doesnt exists and truncate to zero if it does exist. 
+    // https://medium.com/@joshuaudayagiri/linux-system-calls-write-a9251cd782c8
+    int fd = open(fileName_buf, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+
+    if (fd == -1) return 1;
+
+    char toWrite_buf[1024];
+    size_t toWrite_len = 1024;
+    convertStringToC(ctx, toWrite, toWrite_buf, toWrite_len, exn);
+    
+    ssize_t bytes_written = write(fd, toWrite_buf, strlen(toWrite_buf));
+    if (bytes_written == -1) {
+        close(fd);
+        return 1;
+    }
+
+    close(fd);
+    return 0;
 }

@@ -7,3 +7,4 @@ clean:
 	rm *.a 
 	rm -rf MLB/
 	rm FD_test
+	rm test2.txt
