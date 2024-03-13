@@ -14,8 +14,12 @@
 
 char file[1024];
 
-char* open_fd(int addr, String fileName, Region str_r) {
-    int fd = open("test.txt", O_RDONLY);
+char* read_fd(int addr, String fileName, Region str_r, Context ctx) {
+    char buf[100];
+    size_t len = 100;
+    uintptr_t exn = 10; // No idea what this is supposed to be but this value works.
+    convertStringToC(ctx, fileName, buf, len, exn);
+    int fd = open(buf, O_RDONLY);
     if (fd == -1) {
         return NULL;
     }
