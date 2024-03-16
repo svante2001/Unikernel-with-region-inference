@@ -1,15 +1,32 @@
 #include <sys/types.h>
 #include <dirent.h>
 #include <stdio.h>
-
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
-
+#include <stdlib.h>
 #include "/home/svante/Documents/mlkit/src/Runtime/String.h"
 
-char file[1024];
+#include <fcntl.h>    // for open
+#include <unistd.h>   // for read, close
 
+String REG_POLY_FUN_HDR(my_convertStringToML, Region rAddr, const char *cStr, int len) {  
+    String res;
+    char *p;
+    res = REG_POLY_CALL(allocStringC, rAddr, len);
+    for (p = res->data; len > 0;) {
+        if (*cStr != '\0') {
+            *p++ = *cStr++;
+        } else {
+            cStr++; // Skip null byte
+        }
+        len--;
+    }
+    *p = '\0';
+    return res;
+}
+
+char file[1024];
 char* read_fd(int addr, String fileName, Region str_r, Context ctx) {
     char fileName_buf[100];
     size_t len = 100;
@@ -32,8 +49,9 @@ char* read_fd(int addr, String fileName, Region str_r, Context ctx) {
     // Null-terminate the buffer
     file[bytes_read] = '\0';
 
-    return convertStringToML(str_r, file);
+    return my_convertStringToML(str_r, file, bytes_read);
 }
+
 
 int write_fd(String fileName, String toWrite, Context ctx) {
     char fileName_buf[100];
