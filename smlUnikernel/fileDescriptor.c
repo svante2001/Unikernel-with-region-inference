@@ -7,9 +7,6 @@
 #include <stdlib.h>
 #include "/home/svante/Documents/mlkit/src/Runtime/String.h"
 
-#include <fcntl.h>    // for open
-#include <unistd.h>   // for read, close
-
 String REG_POLY_FUN_HDR(my_convertStringToML, Region rAddr, const char *cStr, int len) {  
     String res;
     char *p;
@@ -18,7 +15,7 @@ String REG_POLY_FUN_HDR(my_convertStringToML, Region rAddr, const char *cStr, in
         if (*cStr != '\0') {
             *p++ = *cStr++;
         } else {
-            cStr++; // Skip null byte
+            cStr++;
         }
         len--;
     }
@@ -37,7 +34,6 @@ char* read_fd(int addr, String fileName, Region str_r, Context ctx) {
         return NULL;
     }
 
-    // Read the file in chunks
     ssize_t bytes_read = read(fd, file, 1024);
     if (bytes_read == -1) {
         close(fd);
