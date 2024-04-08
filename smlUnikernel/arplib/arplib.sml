@@ -24,10 +24,10 @@ fun decodeArp s =
         val tpa = String.substring (s, 24, 6) |> toByteList 
     in 
     {
-        htype = htype, 
+        htype = htype,
         ptype = ptype, 
         hlen = hlen, 
-        plen = plen, 
+        plen = plen,
         oper = oper, 
         sha = sha, 
         spa = spa, 
@@ -58,3 +58,14 @@ fun printArp {
     "Target hardware adress: [" ^ rawBytesString tha ^ "]\n" ^
     "Target protocol address: [" ^ rawBytesString tpa ^ "]\n\n" 
     |> print
+
+(* fun encodeArp Htyp Ptype Hlen Plen Sha Spa Tha Tpa =
+    byteListToString Htyp ^ 
+    byteListToString Ptype ^
+    byteListToString Hlen ^
+    byteListToString Plen ^ 
+    "2" ^
+    byteListToString Sha ^
+    byteListToString Spa ^
+    byteListToString Tha ^
+    byteListToString Tpa *)
