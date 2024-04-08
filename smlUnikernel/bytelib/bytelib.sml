@@ -4,7 +4,7 @@ fun rawBytesString (b: int list) = b |> foldl (fn (x, acc) => acc ^ " " ^ (Int.t
 
 fun byteListToString b = b |> map Char.chr |> implode
 
-fun intToRawbyteString i nb = 
+fun intToRawbyteString nb i = 
     let fun h_intToRawbyteString i 1 acc = Char.chr i :: acc |> implode
           | h_intToRawbyteString i nb acc = 
             if nb <= 0 then ""

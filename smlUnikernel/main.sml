@@ -1,13 +1,18 @@
 fun l () =
     let 
-        val s = read_tap ()
-        val ethFrame = String.extract (s, 4, NONE) |> decodeEthFrame 
+        val s = String.extract (read_tap (), 4, NONE)
+        val ethFrame = s |> decodeEthFrame 
         val {prot, dstMac, srcMac, payload} = ethFrame
-        val arp = String.extract (s, 18, NONE) |> decodeArp
+        val arp = SOME (String.extract (s, 12, NONE) |> decodeArp) handle _ => NONE
     in
-        printEtherFrame ethFrame;
-        (case prot of 
-          ARP => printArp arp
+        print "Before\n";
+        s |> printRawBytes;
+        print "\n";
+        print "After\n";
+        encodeEthFrame dstMac srcMac prot payload |> printRawBytes;
+        print "\n";
+        (case (prot, arp) of 
+          (ARP, SOME a) => printArp a
         | _ => print "Found other packet\n");
         l ()
     end

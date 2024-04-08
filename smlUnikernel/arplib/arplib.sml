@@ -4,7 +4,7 @@ fun toArpOperation i =
     case i of 
       1 => Request
     | 2 => Reply
-    | _ => raise Fail "Arp operation could not be determined" 
+    | _ => raise Fail "Could not determine arp"
 
 fun arpOperationToString arp =
     case arp of
@@ -23,17 +23,16 @@ fun decodeArp s =
         val tha = String.substring (s, 18, 6) |> toByteList
         val tpa = String.substring (s, 24, 6) |> toByteList 
     in 
-    {
-        htype = htype,
-        ptype = ptype, 
-        hlen = hlen, 
-        plen = plen,
-        oper = oper, 
-        sha = sha, 
-        spa = spa, 
-        tha = tha, 
-        tpa = tpa
-    }
+        {   htype = htype,
+            ptype = ptype, 
+            hlen = hlen, 
+            plen = plen,
+            oper = oper, 
+            sha = sha, 
+            spa = spa, 
+            tha = tha, 
+            tpa = tpa
+        }
     end
 
 fun printArp {

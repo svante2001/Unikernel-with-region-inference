@@ -10,6 +10,7 @@ setup:
 	sudo ifconfig tap0 10.0.0.1 up
 
 clean:
+	-rm run
 	-rm *.a 
 	-rm -rf */MLB MLB
 	-rm main
