@@ -6,14 +6,13 @@ fun ethTypeToString ethType =
     | IPv4 => "IPv4"
     | IPv6 => "IPv6"
 
-fun printEtherFrame({prot : ethType, dstMac : int list, srcMac : int list, payload : string}) = (
-    print "\n-- ETHERFRAME --\n";
-    "Type: " ^ (ethTypeToString prot) ^ "\n" |> print;
-    "Source mac-addreess: [" ^ (rawBytesString srcMac) ^ " ]\n" |> print;
-    "Destination mac-address: [" ^ (rawBytesString dstMac) ^ " ]\n" |> print;
-    "Length of payload: " ^ (String.size payload |> Int.toString) ^ "\n" |> print; 
-    print "\n"
-)
+fun printEtherFrame({prot : ethType, dstMac : int list, srcMac : int list, payload : string}) =
+    "\n-- ETHERFRAME --\n" ^
+    "Type: " ^ (ethTypeToString prot) ^ "\n" ^
+    "Source mac-addreess: [" ^ (rawBytesString srcMac) ^ " ]\n" ^
+    "Destination mac-address: [" ^ (rawBytesString dstMac) ^ " ]\n" ^
+    "Length of payload: " ^ (String.size payload |> Int.toString) ^ "\n\n" 
+    |> print
 
 fun convertToEthType s =
     case convertRawBytes s of

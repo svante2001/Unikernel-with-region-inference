@@ -56,4 +56,5 @@ fun printArp {
     "Sender hardware address: [" ^ rawBytesString sha ^ "]\n" ^
     "Sender protocol address: [" ^ rawBytesString spa ^ "]\n" ^
     "Target hardware adress: [" ^ rawBytesString tha ^ "]\n" ^
-    "Target protocol address: [" ^ rawBytesString tpa ^ "]\n" |> print
+    "Target protocol address: [" ^ rawBytesString tpa ^ "]\n\n" 
+    |> print
