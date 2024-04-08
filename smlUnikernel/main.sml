@@ -3,11 +3,11 @@ fun l () =
         val s = read_tap ()
         val ethFrame = String.extract (s, 4, NONE) |> decodeEthFrame 
         val {prot, dstMac, srcMac, payload} = ethFrame
+        val arp = String.extract (s, 18, NONE) |> decodeArp
     in
         printEtherFrame ethFrame;
-        printRawBytes (String.extract (s, 18, NONE));
         (case prot of 
-        ARP => print "Found arp\n"
+          ARP => printArp arp
         | _ => print "Found other packet\n");
         l ()
     end

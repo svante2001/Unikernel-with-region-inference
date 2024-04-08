@@ -7,7 +7,7 @@ fun ethTypeToString ethType =
     | IPv6 => "IPv6"
 
 fun printEtherFrame({prot : ethType, dstMac : int list, srcMac : int list, payload : string}) = (
-    print "ETHERFRAME:\n";
+    print "\n-- ETHERFRAME --\n";
     "Type: " ^ (ethTypeToString prot) ^ "\n" |> print;
     "Source mac-addreess: [" ^ (rawBytesString srcMac) ^ " ]\n" |> print;
     "Destination mac-address: [" ^ (rawBytesString dstMac) ^ " ]\n" |> print;
