@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
-#include "/home/axel/mlkit/src/Runtime/String.h"
+#include "/home/svante/Documents/mlkit/src/Runtime/String.h"
 #include <errno.h>
 #include <err.h>
 #include <arpa/inet.h>
@@ -104,11 +104,7 @@ String REG_POLY_FUN_HDR(my_convertStringToML, Region rAddr, const char *cStr, in
     char *p;
     res = REG_POLY_CALL(allocStringC, rAddr, len);
     for (p = res->data; len > 0;) {
-        if (*cStr != '\0') {
-            *p++ = *cStr++;
-        } else {
-            cStr++;
-        }
+        *p++ = *cStr++;
         len--;
     }
     *p = '\0';
@@ -130,7 +126,7 @@ char* read_tap(int addr, Region str_r, Context ctx) {
     }
 
     char buf[1500];
-    ssize_t bytes_read = read(tapfd, buf, 1024);
+    ssize_t bytes_read = read(tapfd, buf, 1500);
 
     // Null-terminate the buffer
     buf[bytes_read] = '\0';
