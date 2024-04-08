@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
-#include "/home/svante/Documents/mlkit/src/Runtime/String.h"
+#include "String.h"
 #include <errno.h>
 #include <err.h>
 #include <arpa/inet.h>
