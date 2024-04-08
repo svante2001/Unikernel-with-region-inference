@@ -1,12 +1,9 @@
-#include <sys/types.h>
-#include <dirent.h>
-#include <stdio.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <string.h>
 #include <stdlib.h>
-#include "/home/svante/Documents/mlkit/src/Runtime/String.h"
+#include <stdio.h>
+#include <string.h>
 #include <errno.h>
+#include <unistd.h>
+#include <fcntl.h>
 #include <err.h>
 #include <arpa/inet.h>
 #include <sys/ioctl.h>
@@ -18,6 +15,7 @@
 #endif /* __FreeBSD__ */
 #include <ifaddrs.h>
 #include <assert.h>
+
 #include <linux/if.h>
 #include <linux/if_tun.h>
 
@@ -99,89 +97,25 @@ void setup(char *dev) {
     }
 }
 
-String REG_POLY_FUN_HDR(my_convertStringToML, Region rAddr, const char *cStr, int len) {  
-    String res;
-    char *p;
-    res = REG_POLY_CALL(allocStringC, rAddr, len);
-    for (p = res->data; len > 0;) {
-        *p++ = *cStr++;
-        len--;
-    }
-    *p = '\0';
-    return res;
-}
-
-int tapfd = -1;
-char* read_tap(int addr, Region str_r, Context ctx) {
+int main() {
     char tap_name[IFNAMSIZ];
 
     strcpy(tap_name, "tap0");
-
-    if (tapfd == -1) {
-        tapfd = tun_alloc(tap_name, IFF_TAP);  /* tap interface */
-
-        if (tapfd == -1) return NULL;
-
-        setup(tap_name);
-    }
+    int tapfd = tun_alloc(tap_name, IFF_TAP);  /* tap interface */
+    setup(tap_name);
 
     char buf[1500];
-    ssize_t bytes_read = read(tapfd, buf, 1500);
+    while (1) {
+        int i = read(tapfd, buf, 1500);
+        printf("Thing: %.1500s", buf);
+        printf("Read bytes: %d\n", i);
+        // write(tapfd, buf, i);
 
-    // Null-terminate the buffer
-    buf[bytes_read] = '\0';
-
-    return my_convertStringToML(str_r, buf, bytes_read);
-}
-
-char* read_fd(int addr, String fileName, Region str_r, Context ctx) {
-    char file[1024];
-    char fileName_buf[100];
-    size_t len = 100;
-    uintptr_t exn = 10; // No idea what this is supposed to be but this value works.
-    convertStringToC(ctx, fileName, fileName_buf, len, exn);
-    int fd = open(fileName_buf, O_RDONLY);
-    if (fd == -1) {
-        return NULL;
+        for (int i = 0; i < 99; i++) {
+            printf("%d ", buf[i]);
+        }
+        printf("\n");
     }
 
-    ssize_t bytes_read = read(fd, file, 1024);
-    if (bytes_read == -1) {
-        close(fd);
-        return NULL;
-    }
-
-    close(fd);
-
-    // Null-terminate the buffer
-    file[bytes_read] = '\0';
-
-    return my_convertStringToML(str_r, file, bytes_read);
-}
-
-
-int write_fd(String fileName, String toWrite, Context ctx) {
-    char fileName_buf[100];
-    size_t len = 100;
-    uintptr_t exn = 10; // No idea what this is supposed to be but this value works.
-    convertStringToC(ctx, fileName, fileName_buf, len, exn);
-
-    // Opens write only, creates if the file doesnt exists and truncate to zero if it does exist. 
-    // https://medium.com/@joshuaudayagiri/linux-system-calls-write-a9251cd782c8
-    int fd = open(fileName_buf, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-
-    if (fd == -1) return 1;
-
-    char toWrite_buf[1024];
-    size_t toWrite_len = 1024;
-    convertStringToC(ctx, toWrite, toWrite_buf, toWrite_len, exn);
-    
-    ssize_t bytes_written = write(fd, toWrite_buf, strlen(toWrite_buf));
-    if (bytes_written == -1) {
-        close(fd);
-        return 1;
-    }
-
-    close(fd);
     return 0;
 }
