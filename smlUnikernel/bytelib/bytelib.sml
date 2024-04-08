@@ -2,6 +2,8 @@ fun toByteList s = s |> explode |> map Char.ord
 
 fun rawBytesString (b: int list) = b |> foldl (fn (x, acc) => acc ^ " " ^ (Int.toString x)) ""
 
+fun byteListToString b = b |> map Char.chr |> implode
+
 fun convertRawBytes s = 
     s
     |> toByteList 
