@@ -1,10 +1,10 @@
 datatype ARP_OP = Request | Reply
 
-fun toArpOperation i = 
-    case i of 
+fun toArpOperation i =
+    (case i of 
       1 => Request
     | 2 => Reply
-    | _ => raise Fail "Could not determine arp"
+    | _ => raise Fail "Could not determine arp")
 
 fun arpOperationToString arp =
     case arp of
@@ -58,13 +58,13 @@ fun printArp {
     "Target protocol address: [" ^ rawBytesString tpa ^ "]\n\n" 
     |> print
 
-(* fun encodeArp Htyp Ptype Hlen Plen Sha Spa Tha Tpa =
-    byteListToString Htyp ^ 
-    byteListToString Ptype ^
-    byteListToString Hlen ^
-    byteListToString Plen ^ 
-    "2" ^
+fun encodeArp Htyp Ptype Hlen Plen Sha Spa Tha Tpa =
+    (intToRawbyteString Htyp 2) ^
+    (intToRawbyteString Ptype 2) ^
+    (intToRawbyteString Hlen 1) ^
+    (intToRawbyteString Plen 1) ^
+    (intToRawbyteString 2 1) ^
     byteListToString Sha ^
     byteListToString Spa ^
     byteListToString Tha ^
-    byteListToString Tpa *)
+    byteListToString Tpa
