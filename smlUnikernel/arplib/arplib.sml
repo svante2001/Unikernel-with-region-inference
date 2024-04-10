@@ -1,10 +1,15 @@
 datatype ARP_OP = Request | Reply
 
 fun toArpOperation i =
-    (case i of 
+    case i of 
       1 => Request
     | 2 => Reply
-    | _ => raise Fail "Could not determine arp")
+    | _ => raise Fail "Could not determine arp"
+
+(* fun arpOperationToInt op =
+    case op of 
+      Request => 1
+    | Reply => 2 *)
 
 fun arpOperationToString arp =
     case arp of
@@ -21,7 +26,7 @@ fun decodeArp s =
         val sha = String.substring (s, 8, 6) |> toByteList 
         val spa = String.substring (s, 14, 4) |> toByteList 
         val tha = String.substring (s, 18, 6) |> toByteList
-        val tpa = String.substring (s, 24, 6) |> toByteList 
+        val tpa = String.substring (s, 24, 4) |> toByteList 
     in 
         {   htype = htype,
             ptype = ptype, 
@@ -58,12 +63,12 @@ fun printArp {
     "Target protocol address: [" ^ rawBytesString tpa ^ "]\n\n" 
     |> print
 
-fun encodeArp Htyp Ptype Hlen Plen Sha Spa Tha Tpa =
+fun encodeArp Htyp Ptype Hlen Plen Oper Sha Spa Tha Tpa =
     (intToRawbyteString Htyp 2) ^
     (intToRawbyteString Ptype 2) ^
     (intToRawbyteString Hlen 1) ^
     (intToRawbyteString Plen 1) ^
-    (intToRawbyteString 2 1) ^
+    (intToRawbyteString 2 2) ^
     byteListToString Sha ^
     byteListToString Spa ^
     byteListToString Tha ^

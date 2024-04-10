@@ -9,3 +9,6 @@ fun open_tap() : unit =
 
 fun read_tap() : string =
   prim ("read_tap", ())
+
+fun write_tap(byte_list : int list) : unit =
+  prim ("write_tap", byte_list)

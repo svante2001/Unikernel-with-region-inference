@@ -6,6 +6,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include "String.h"
+#include "List.h"
+#include "Math.h"
 #include <errno.h>
 #include <err.h>
 #include <arpa/inet.h>
@@ -13,6 +15,7 @@
 #include <net/if.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <errno.h>
 #if defined(__FreeBSD__) || defined(__OpenBSD__)
 #include <netinet/in.h>
 #endif /* __FreeBSD__ */
@@ -134,6 +137,19 @@ char* read_tap(int addr, Region str_r, Context ctx) {
     return my_convertStringToML(str_r, buf, bytes_read);
 }
 
+void write_tap(uintptr_t byte_list) {
+    char toWrite_buf[1500];
+    size_t toWrite_len = 1500;
+
+    uintptr_t ys;
+    int i = 0;
+    for (ys = byte_list; isCONS(ys); ys=tl(ys)) {
+        toWrite_buf[i++] = convertIntToC(hd(ys));
+    }
+
+    ssize_t bytes_written = write(tapfd, toWrite_buf, i);
+}
+
 char* read_fd(int addr, String fileName, Region str_r, Context ctx) {
     char file[1024];
     char fileName_buf[100];
@@ -158,7 +174,6 @@ char* read_fd(int addr, String fileName, Region str_r, Context ctx) {
 
     return my_convertStringToML(str_r, file, bytes_read);
 }
-
 
 int write_fd(String fileName, String toWrite, Context ctx) {
     char fileName_buf[100];

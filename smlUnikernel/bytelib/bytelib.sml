@@ -2,7 +2,7 @@ fun toByteList s = s |> explode |> map Char.ord
 
 fun rawBytesString (b: int list) = b |> foldl (fn (x, acc) => acc ^ " " ^ (Int.toString x)) ""
 
-fun byteListToString b = b |> map Char.chr |> implode
+fun byteListToString b = (b |> map Char.chr |> implode)
 
 fun intToRawbyteString i nb = 
     let fun h_intToRawbyteString i 1 acc = Char.chr i :: acc |> implode

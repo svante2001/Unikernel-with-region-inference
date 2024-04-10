@@ -42,5 +42,5 @@ fun decodeEthFrame s =
 fun encodeEthFrame dst_macaddr src_macaddr eth_type payload = 
   byteListToString dst_macaddr ^ 
   byteListToString src_macaddr ^
-  (eth_type |> ethTypeToInt |> intToRawbyteString 2) ^ 
+  (intToRawbyteString (eth_type |> ethTypeToInt) 2) ^ 
   payload
