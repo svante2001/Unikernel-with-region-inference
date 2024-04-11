@@ -14,5 +14,5 @@ clean:
 	-(cd RuntimeMini; make clean)
 	-rm run
 	-rm *.a 
-	-rm -rf */MLB MLB
+	-rm -rf Libs/*lib/MLB MLB
 	-rm main
