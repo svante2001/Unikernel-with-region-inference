@@ -3,6 +3,6 @@ Libs/arplib/arplib.mlb
 Libs/bytelib/bytelib.mlb
 Libs/ethlib/ethlib.mlb
 Libs/netif-tuntaplib/netif-tuntaplib.mlb
-Libs/utils/utils.mlb
+Libs/utilslib/utilslib.mlb
 
 main.sml
