@@ -13,5 +13,6 @@ basis: lib/runtimeSystem.a
 
 .PHONY: clean
 clean:
+	(cd src/RuntimeMini; make clean)
 	(cd basis; rm -rf MLB *~ run)
 	rm -rf MLB *~ lib/runtimeSystem.a run *.exe
