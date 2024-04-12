@@ -1,5 +1,7 @@
 $(SML_LIB)/basis/basis.mlb
 Libs/arplib/arplib.mlb
+Libs/iplib/iplib.mlb
+Libs/udplib/udplib.mlb
 Libs/bytelib/bytelib.mlb
 Libs/ethlib/ethlib.mlb
 Libs/netif-tuntaplib/netif-tuntaplib.mlb

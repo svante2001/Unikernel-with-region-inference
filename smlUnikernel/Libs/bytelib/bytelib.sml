@@ -13,6 +13,11 @@ fun intToRawbyteString i nb =
         h_intToRawbyteString i nb []
     end
 
+fun printCharsOfRawbytes s =
+    s 
+    |> map (fn x => (Char.chr x |> Char.toString) ^ " ") 
+    |> app print
+
 fun convertRawBytes s = 
     s
     |> toByteList 

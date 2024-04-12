@@ -28,14 +28,14 @@ fun convertToEthType s =
     | _ => NONE
 
 fun decodeEthFrame s = 
-    let 
-        val prot = String.substring (s, 12, 2) |> convertToEthType
-        val dstMac = String.substring (s, 0, 6) |> toByteList
-        val srcMac = String.substring (s, 6, 6) |> toByteList 
-        val payload = String.extract (s, 14, NONE)
-    in
-        case prot of 
-          SOME p => {prot = p, dstMac = dstMac, srcMac = srcMac, payload = payload}
+    let val prot = String.substring (s, 12, 2) |> convertToEthType
+    in  case prot of 
+          SOME p => {
+              prot = p, 
+              dstMac = String.substring (s, 0, 6) |> toByteList, 
+              srcMac = String.substring (s, 6, 6) |> toByteList, 
+              payload = String.extract (s, 14, NONE)
+            }
         | NONE => raise Fail "Protocol not found."
     end
 

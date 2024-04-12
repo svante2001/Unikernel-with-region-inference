@@ -23,6 +23,12 @@ fun l () =
                                 write_tap (send |> toByteList)
                             end
                         | NONE => (print "Was none"; l())
+                end  
+            | IPv4 => 
+                let val ipv4 = String.extract (s, 14, NONE) |> decode_IPv4
+                in
+                    ipv4 |> printIPv4;
+                    (#payload ipv4) |> decode_UDP |> printUPD
                 end
             | _ => print "Recieved other packet\n");
         l ()
