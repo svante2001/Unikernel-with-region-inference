@@ -7,6 +7,13 @@ fun intToProt i =
     | 0x11 => UDP 
     | _ => UNKNOWN
 
+fun protToInt i =
+    case i of 
+      ICMP => 0x01 
+    | TCP => 0x06 
+    | UDP => 0x11 
+    | _ => raise Fail "Unknown protocol." 
+
 fun protToString p =
     case p of 
       ICMP => "ICMP"
@@ -16,14 +23,14 @@ fun protToString p =
 
 fun decode_IPv4 s =
     {
-        version = (String.substring (s, 0, 1) |> convertRawBytes) div 16,
-        ihl = (String.substring (s, 0, 1) |> convertRawBytes) mod 16,
-        dscp = (String.substring (s, 0, 1) |> convertRawBytes) div 4, 
-        ecn = (String.substring (s, 1, 1) |> convertRawBytes) mod 4,
+        version = getLBits (String.substring (s, 0, 1) |> convertRawBytes) 4,
+        ihl = getRBits (String.substring (s, 0, 1) |> convertRawBytes) 4,
+        dscp = getLBits (String.substring (s, 1, 1) |> convertRawBytes) 6, 
+        ecn = getRBits (String.substring (s, 1, 1) |> convertRawBytes) 2,
         total_length = String.substring (s, 2, 2) |> convertRawBytes,
         identification = String.substring (s, 4, 2) |> convertRawBytes,
-        flags = (String.substring (s, 6, 2) |> convertRawBytes) div 8192,
-        fragment_offset = (String.substring (s, 6, 2) |> convertRawBytes) mod 8192, 
+        flags = getLBits (String.substring (s, 6, 1) |> convertRawBytes) 3,
+        fragment_offset = getRBits (String.substring (s, 6, 2) |> convertRawBytes) 13, 
         time_to_live = String.substring (s, 8, 1) |> convertRawBytes,
         protocol = String.substring (s, 9, 1) |> convertRawBytes |> intToProt,
         header_checksum = String.substring (s, 10, 2) |> convertRawBytes,
@@ -63,3 +70,40 @@ fun printIPv4 ({
     "SRC-ADDRESS: " ^ rawBytesString source_addr  ^ "\n" ^
     "DST-ADDRESS: " ^ rawBytesString dest_addr  ^ "\n"
     |> print
+
+
+fun toHextets [] = []
+  | toHextets [x] = [x]
+  | toHextets (x::y::t) = x * (2 ** 8) + y :: toHextets t
+
+fun hextetIsNeg ht = ht -  0x7FFF = 0x8000
+
+fun hextetToOC ht = 
+    if hextetIsNeg ht then 0xFFFF - ht - 1
+    else ht
+
+fun encodeIpv4  (* Version : This is always ipv4 *) 
+                Ihl 
+                Dscp 
+                Ecn 
+                Total_length 
+                Identification 
+                Flags 
+                Fragment_offset 
+                (* Time_to_live : This is hard-coded to 255 *)
+                Protocol 
+                Header_checksum 
+                Source_addr 
+                Dest_addr 
+                Payload =
+    intToRawbyteString (setLBits 4 4 + Ihl) 1 ^ 
+    intToRawbyteString (setLBits Dscp 6 + Ecn) 1 ^ 
+    intToRawbyteString Total_length 2 ^
+    intToRawbyteString Identification 2 ^
+    intToRawbyteString ((setLBits Flags 3 * (2 ** 8)) + Fragment_offset) 2 ^
+    intToRawbyteString 64 1 ^
+    intToRawbyteString (Protocol |> protToInt) 1 ^ 
+    intToRawbyteString Header_checksum 2 ^
+    byteListToString Source_addr ^
+    byteListToString Dest_addr ^
+    Payload

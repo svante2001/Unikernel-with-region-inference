@@ -2,7 +2,7 @@
 fun decode_UDP s = {
     source_port = String.substring (s, 0, 2) |> convertRawBytes,
     dest_port = String.substring (s, 2, 2) |> convertRawBytes,
-    UPD_length = String.substring (s, 4, 2) |> convertRawBytes,
+    UDP_length = String.substring (s, 4, 2) |> convertRawBytes,
     checksum = String.substring (s, 6, 2) |> convertRawBytes,
     data = String.extract (s, 8, NONE)
 }
@@ -21,3 +21,10 @@ fun printUPD ({
     "Checksum: " ^ Int.toString checksum ^ "\n" ^
     "Data: " ^ data ^ "\n"
     |> print
+
+fun encodeUDP Source_port Dest_port UDP_Length Checksum Data =
+    (intToRawbyteString Source_port 2) ^
+    (intToRawbyteString Dest_port 2) ^
+    (intToRawbyteString UDP_Length 2) ^
+    (intToRawbyteString Checksum 2) ^
+    Data

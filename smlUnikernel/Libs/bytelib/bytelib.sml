@@ -13,6 +13,12 @@ fun intToRawbyteString i nb =
         h_intToRawbyteString i nb []
     end
 
+fun getLBits octet nb = octet div (2**(8-nb))
+
+fun getRBits octet nb = octet mod (2**nb)
+
+fun setLBits num nb = num * (2**(8-nb))
+
 fun printCharsOfRawbytes s =
     s 
     |> map (fn x => (Char.chr x |> Char.toString) ^ " ") 
