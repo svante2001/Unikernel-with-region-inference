@@ -1,2 +1,7 @@
 # Ignore /duniverse folder
 **/duniverse
+
+MLB/
+*.o
+*.a
+main
