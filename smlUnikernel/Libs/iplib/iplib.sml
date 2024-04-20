@@ -82,28 +82,45 @@ fun hextetToOC ht =
     if hextetIsNeg ht then 0xFFFF - ht - 1
     else ht
 
+fun ipv4Checksum l = 
+  let val sum = List.foldl (op +) 0 l 
+      val carry = (sum - getRBits sum 16) div (2 ** 16) 
+      val sum_withoutcarry = sum - (sum - getRBits sum 16) 
+  in sum_withoutcarry + carry |> Word.fromInt |> Word.notb |> (fn w => Word.andb (Word.fromInt 0xFFFF, w)) |> Word.toInt
+  end
+
 fun encodeIpv4  (* Version : This is always ipv4 *) 
                 Ihl 
                 Dscp 
                 Ecn 
-                Total_length 
+                (* Total_length  *)
                 Identification 
                 Flags 
                 Fragment_offset 
-                (* Time_to_live : This is hard-coded to 255 *)
+                Time_to_live
                 Protocol 
                 Header_checksum 
                 Source_addr 
                 Dest_addr 
                 Payload =
-    intToRawbyteString (setLBits 4 4 + Ihl) 1 ^ 
-    intToRawbyteString (setLBits Dscp 6 + Ecn) 1 ^ 
-    intToRawbyteString Total_length 2 ^
-    intToRawbyteString Identification 2 ^
-    intToRawbyteString ((setLBits Flags 3 * (2 ** 8)) + Fragment_offset) 2 ^
-    intToRawbyteString 64 1 ^
-    intToRawbyteString (Protocol |> protToInt) 1 ^ 
-    intToRawbyteString Header_checksum 2 ^
-    byteListToString Source_addr ^
-    byteListToString Dest_addr ^
-    Payload
+    let val checksum_header = 
+          intToRawbyteString (setLBits 4 4 + Ihl) 1 ^ 
+          intToRawbyteString (setLBits Dscp 6 + Ecn) 1 ^ 
+          intToRawbyteString (20 + String.size Payload) 2 ^
+          intToRawbyteString Identification 2 ^
+          intToRawbyteString ((setLBits Flags 3 * (2 ** 8)) + Fragment_offset) 2 ^
+          intToRawbyteString Time_to_live 1 ^
+          intToRawbyteString (Protocol |> protToInt) 1 ^ 
+          intToRawbyteString 0 2 ^
+          byteListToString Source_addr ^
+          byteListToString Dest_addr
+        val checkSum = checksum_header |> toByteList |> toHextets |> ipv4Checksum
+        val header = String.substring (checksum_header, 0, 10) ^ intToRawbyteString checkSum 2 ^ String.extract (checksum_header, 12, NONE)
+    in
+      print "Length:\n";
+      Int.toString (20 + String.size Payload) |> print;
+      print "\nChecksum cal:\n";
+      Int.fmt StringCvt.HEX (checkSum) |> print;
+      print "\n";
+      header ^ Payload
+    end

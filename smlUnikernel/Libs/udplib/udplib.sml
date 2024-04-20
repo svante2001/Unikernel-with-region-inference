@@ -25,6 +25,6 @@ fun printUPD ({
 fun encodeUDP Source_port Dest_port UDP_Length Checksum Data =
     (intToRawbyteString Source_port 2) ^
     (intToRawbyteString Dest_port 2) ^
-    (intToRawbyteString UDP_Length 2) ^
-    (intToRawbyteString Checksum 2) ^
+    (intToRawbyteString (8 + String.size Data) 2) ^
+    (intToRawbyteString 0 2) ^
     Data
