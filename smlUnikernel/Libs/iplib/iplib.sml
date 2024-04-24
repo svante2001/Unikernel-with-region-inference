@@ -117,10 +117,10 @@ fun encodeIpv4  (* Version : This is always ipv4 *)
         val checkSum = checksum_header |> toByteList |> toHextets |> ipv4Checksum
         val header = String.substring (checksum_header, 0, 10) ^ intToRawbyteString checkSum 2 ^ String.extract (checksum_header, 12, NONE)
     in
-      print "Length:\n";
+      (* print "Length:\n";
       Int.toString (20 + String.size Payload) |> print;
       print "\nChecksum cal:\n";
       Int.fmt StringCvt.HEX (checkSum) |> print;
-      print "\n";
+      print "\n"; *)
       header ^ Payload
     end
