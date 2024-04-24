@@ -55,7 +55,7 @@ fun listen () =
                         end
 
                 in  case found of 
-                      SOME (_, cb) => (cb (#data udp) handle _ => "Callback function failed") |> send
+                      SOME (_, cb) => cb (#data udp) |> send
                     | NONE => "Port is not mapped to a function." |> send
                 end
             | _ => print "Recieved other packet\n"
