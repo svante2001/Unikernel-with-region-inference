@@ -1,3 +1,17 @@
+fun fac n = 
+    if n <= 1 then 1
+    else fac(n-1) * n
+
+fun fib n = 
+    if n < 2 then n
+    else fib(n - 1) + fib(n - 2)
+
+fun portMap port data = 
+    case port of 
+      8080 => (Int.toString (fac (valOf (Int.fromString data))) handle _ => "Malformed data.")
+    | 8081 => (Int.toString (fib (valOf (Int.fromString data))) handle _ => "Malformed data.")
+    | _ => "Port is not mapped to a function."
+
 fun l () =
     let 
         val t = read_tap () 
@@ -6,9 +20,9 @@ fun l () =
         val {prot, dstMac, srcMac, payload} = ethFrame
         val mac = [123, 124, 125, 126, 127, 128]
     in
-        print "Initial packet\n";
+        (* print "Initial packet\n";
         t |> printRawBytes;
-        print "\n";
+        print "\n"; *)
         (case prot of 
             ARP =>
                 let val arp = SOME (String.extract (s, 14, NONE) |> decodeArp) handle _ => NONE
@@ -29,7 +43,7 @@ fun l () =
             | IPv4 => 
                 let val ipv4 = String.extract (s, 14, NONE) |> decode_IPv4
                     val udp = (#payload ipv4) |> decode_UDP
-                    val message = "Hello Mars!"
+                    val message = portMap (#dest_port udp) (#data udp)
                     val echo = 
                         (message)
                         |> encodeUDP (#dest_port udp) (#source_port udp) (#UDP_length udp) (#checksum udp)
@@ -47,9 +61,6 @@ fun l () =
                             (#source_addr ipv4)
                     val send = (([0, 0, 8, 0] |> byteListToString) ^ (echo |> encodeEthFrame srcMac mac IPv4))
                 in
-                    (* print "checksum given";
-                    Int.fmt StringCvt.HEX (#header_checksum ipv4) |> print;
-                    print "\n"; *)
                     ipv4 |> printIPv4;
                     send
                     |> toByteList
@@ -60,9 +71,5 @@ fun l () =
     end
     
 val _ = (
-    (* checkSum [0x4500, 0x0073, 0x0000, 0x4000, 0x4011, 0xb861, 0xc0a8, 0x0001, 0xc0a8, 0x00c7]
-    |> Int.fmt StringCvt.HEX
-    |> print;
-    print "Hello world" *)
     l ()
 )
