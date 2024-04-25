@@ -1,5 +1,22 @@
 datatype prot = ICMP | TCP | UDP | UNKNOWN
 
+fun toHextets [] = []
+  | toHextets [x] = [x]
+  | toHextets (x::y::t) = x * (2 ** 8) + y :: toHextets t
+
+fun hextetIsNeg ht = ht -  0x7FFF = 0x8000
+
+fun hextetToOC ht = 
+    if hextetIsNeg ht then 0xFFFF - ht - 1
+    else ht
+
+fun ipv4Checksum l = 
+  let val sum = List.foldl (op +) 0 l 
+      val carry = (sum - getRBits sum 16) div (2 ** 16) 
+      val sum_withoutcarry = sum - (sum - getRBits sum 16) 
+  in sum_withoutcarry + carry |> Word.fromInt |> Word.notb |> (fn w => Word.andb (Word.fromInt 0xFFFF, w)) |> Word.toInt
+  end
+
 fun intToProt i =
     case i of 
       0x01 => ICMP
@@ -39,6 +56,39 @@ fun decode_IPv4 s =
         payload = String.extract (s, 20, NONE)
     }
 
+fun verify_checksum_ipv4 r =
+    let val ({
+      version,
+      ihl,
+      dscp,
+      ecn,
+      total_length,
+      identification,
+      flags,
+      fragment_offset,
+      time_to_live,
+      protocol,
+      header_checksum,
+      source_addr,
+      dest_addr,
+      payload
+    }) = r
+    val checksum_header = 
+        intToRawbyteString (setLBits 4 4 + ihl) 1 ^ 
+        intToRawbyteString (setLBits dscp 6 + ecn) 1 ^ 
+        intToRawbyteString (20 + String.size payload) 2 ^
+        intToRawbyteString identification 2 ^
+        intToRawbyteString ((setLBits flags 3 * (2 ** 8)) + fragment_offset) 2 ^
+        intToRawbyteString time_to_live 1 ^
+        intToRawbyteString (protocol |> protToInt) 1 ^ 
+        intToRawbyteString 0 2 ^
+        byteListToString source_addr ^
+        byteListToString dest_addr
+      val checkSum = checksum_header |> toByteList |> toHextets |> ipv4Checksum
+    in 
+      if checkSum = header_checksum then r else raise Fail "Bad checksum in incomming IPv4 packet."
+    end
+
 fun printIPv4 ({
     version,
     ihl,
@@ -71,23 +121,6 @@ fun printIPv4 ({
     "DST-ADDRESS: " ^ rawBytesString dest_addr  ^ "\n"
     |> print
 
-
-fun toHextets [] = []
-  | toHextets [x] = [x]
-  | toHextets (x::y::t) = x * (2 ** 8) + y :: toHextets t
-
-fun hextetIsNeg ht = ht -  0x7FFF = 0x8000
-
-fun hextetToOC ht = 
-    if hextetIsNeg ht then 0xFFFF - ht - 1
-    else ht
-
-fun ipv4Checksum l = 
-  let val sum = List.foldl (op +) 0 l 
-      val carry = (sum - getRBits sum 16) div (2 ** 16) 
-      val sum_withoutcarry = sum - (sum - getRBits sum 16) 
-  in sum_withoutcarry + carry |> Word.fromInt |> Word.notb |> (fn w => Word.andb (Word.fromInt 0xFFFF, w)) |> Word.toInt
-  end
 
 fun encodeIpv4  (* Version : This is always ipv4 *) 
                 Ihl 

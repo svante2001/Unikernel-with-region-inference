@@ -28,7 +28,7 @@ fun listen () =
                         | NONE => print "Was none"
                 end
             | IPv4 => 
-                let val ipv4 = String.extract (s, 14, NONE) |> decode_IPv4
+                let val ipv4 = String.extract (s, 14, NONE) |> decode_IPv4 |> verify_checksum_ipv4
                     val udp = (#payload ipv4) |> decode_UDP
                     val found = List.find (fn (port, cb) => (#dest_port udp) = port) (!listenOn)
                     fun send message = 
