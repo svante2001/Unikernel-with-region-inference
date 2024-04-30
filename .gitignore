@@ -5,4 +5,5 @@ MLB/
 *.o
 *.a
 *.exe
+*.txt
 main
