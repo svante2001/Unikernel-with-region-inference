@@ -39,7 +39,7 @@ fun handleArp ethFrame (Header_Eth ethHeader) =
             SOME (Header_ARP arpHeader) => 
                 let val arpPay = encodeArp (Header_ARP {
                         htype = 1, 
-                        ptype = 0x8000,
+                        ptype = 0x0800,
                         hlen = 6,
                         plen = 4,
                         oper = Reply,
@@ -54,21 +54,10 @@ fun handleArp ethFrame (Header_Eth ethHeader) =
                         srcMac = mac
                     }) arpPay
                 in
-                    printArp (Header_ARP {
-                        htype = 1, 
-                        ptype = 0x8000,
-                        hlen = 6,
-                        plen = 4,
-                        oper = Reply,
-                        sha = mac, 
-                        spa = [10, 0, 0, 2],
-                        tha = (#sha arpHeader),
-                        tpa = [10, 0, 0, 1, 0, 0]
-                    }); 
                     print "Recieved ARP packet\n";
                     byteListToString [0, 0, 8, 6] ^ ethPay
                     |> toByteList 
-                    |> print
+                    |> write_tap
                 end
             | NONE => print "Was none"
     end
@@ -84,7 +73,8 @@ fun handleIPv4 ethFrame (Header_Eth ethHeader) =
         (let val dataGotten = assemblePacket (#identification ipv4Header) UDP 
              val found = List.find (fn (port, cb) => (#dest_port udpHeader) = port) (!listenOn)
              fun send payload = 
-                let val udpPay =
+                (let 
+                    val udpPay =
                         encodeUDP 
                            (Header_UDP {
                                 source_port = (#dest_port udpHeader),
@@ -115,21 +105,19 @@ fun handleIPv4 ethFrame (Header_Eth ethHeader) =
                         encodeEthFrame 
                             (Header_Eth {et = IPv4, dstMac = #srcMac ethHeader, srcMac = mac}) 
                             ipv4Pay
-            in 
-                print "Recieved IPv4 packet!!!\n";
-                dataGotten ^ "\n" |> print;
-                ([0, 0, 8, 0] |> byteListToString) ^ ethPay
-                |> toByteList 
-                |> write_tap 
-            end
-            in
-                print "Got to case\n";
-                (case found of
-                      SOME (_, cb) => (print "here2\n"; cb dataGotten |> send)
-                    | NONE => (print "here3\n"; "Port is not mapped to a function." |> send));
-                print "Case done\n"
+                in 
+                    print "Recieved IPv4 packet\n";
+                    dataGotten ^ "\n" |> print;
+                    ([0, 0, 8, 0] |> byteListToString) ^ ethPay
+                    |> toByteList 
+                    |> write_tap 
                 end)
-            end
+            in
+                (case found of
+                      SOME (_, cb) => cb dataGotten |> send
+                    | NONE => "Port is not mapped to a function." |> send)
+            end)
+    end
 
 fun listen () = 
     let 
