@@ -68,7 +68,7 @@ fun handleArp ethFrame (Header_Eth ethHeader) =
                     print "Recieved ARP packet\n";
                     byteListToString [0, 0, 8, 6] ^ ethPay
                     |> toByteList 
-                    |> write_tap
+                    |> print
                 end
             | NONE => print "Was none"
     end
