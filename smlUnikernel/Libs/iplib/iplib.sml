@@ -56,6 +56,27 @@ fun decode_IPv4 s =
         payload = String.extract (s, 20, NONE)
     }
 
+fun is_fragmented r =
+  let val ({ 
+      version,
+      ihl,
+      dscp,
+      ecn,
+      total_length,
+      identification,
+      flags,
+      fragment_offset,
+      time_to_live,
+      protocol,
+      header_checksum,
+      source_addr,
+      dest_addr,
+      payload
+   }) = r
+  in
+    if flags = 1 then true else false
+  end
+
 fun verify_checksum_ipv4 r =
     let val ({
       version,
