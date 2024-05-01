@@ -1,23 +1,31 @@
 datatype ARP_OP = Request | Reply
 
+datatype header_ARP = Header_ARP of {
+    htype : int, 
+    ptype : int, 
+    hlen : int, 
+    plen : int, 
+    oper : ARP_OP, 
+    sha : int list, 
+    spa : int list, 
+    tha : int list, 
+    tpa : int list 
+}
+
 fun toArpOperation i =
-    case i of 
+    (case i of 
       1 => Request
     | 2 => Reply
-    | _ => raise Fail "Could not determine arp operation"
-
-(* fun arpOperationToInt op =
-    case op of 
-      Request => 1
-    | Reply => 2 *)
+    | _ => raise Fail "Could not determine arp operation")
 
 fun arpOperationToString arp =
-    case arp of
+    (case arp of
       Request => "Request"
-    | Reply => "Reply"
+    | Reply => "Reply")
 
 fun decodeArp s =
-    {   htype = String.substring (s, 0, 2) |> convertRawBytes,
+    Header_ARP {   
+        htype = String.substring (s, 0, 2) |> convertRawBytes,
         ptype = String.substring (s, 2, 2) |> convertRawBytes,
         hlen = String.substring (s, 4, 1) |> convertRawBytes,
         plen = String.substring (s, 5, 1) |> convertRawBytes,
@@ -28,17 +36,7 @@ fun decodeArp s =
         tpa = String.substring (s, 24, 4) |> toByteList 
     }
 
-fun printArp {
-        htype, 
-        ptype, 
-        hlen, 
-        plen, 
-        oper, 
-        sha, 
-        spa, 
-        tha, 
-        tpa
-    } =
+fun printArp (Header_ARP { htype, ptype, hlen, plen, oper, sha, spa, tha, tpa }) =
     "\n-- ARP-packet --\n" ^
     "Hardware type: " ^ Int.toString htype ^ "\n" ^
     "Protocol type: " ^ Int.toString ptype ^ "\n" ^
@@ -51,13 +49,17 @@ fun printArp {
     "Target protocol address: [" ^ rawBytesString tpa ^ "]\n\n" 
     |> print
 
-fun encodeArp Htyp Ptype Hlen Plen Oper Sha Spa Tha Tpa =
-    (intToRawbyteString Htyp 2) ^
-    (intToRawbyteString Ptype 2) ^
-    (intToRawbyteString Hlen 1) ^
-    (intToRawbyteString Plen 1) ^
+(* For some reason 'case of' cannot be used here??*)
+fun arpOperationToInt Request = 1
+  | arpOperationToInt Reply = 2 
+
+fun encodeArp (Header_ARP { htype, ptype, hlen, plen, oper, sha, spa, tha, tpa }) =
+    (intToRawbyteString htype 2) ^
+    (intToRawbyteString ptype 2) ^
+    (intToRawbyteString hlen 1) ^
+    (intToRawbyteString plen 1) ^
     (intToRawbyteString 2 2) ^
-    byteListToString Sha ^
-    byteListToString Spa ^
-    byteListToString Tha ^
-    byteListToString Tpa
+    byteListToString sha ^
+    byteListToString spa ^
+    byteListToString tha ^
+    byteListToString tpa
