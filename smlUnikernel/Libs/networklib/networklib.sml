@@ -3,34 +3,49 @@ datatype packet = Packet of {
     offset: int
 }
 
+datatype packetId = PktId of {
+    ipaddr: int list,
+    id: int,
+    prot: protocol,
+    fragmentSum: int ref,
+    packetLength: int
+}
+
+fun pktIDCmp (PktId pktID1) (PktId pktID2) = 
+    let fun ipCmp [] [] = true
+          | ipCmp (hd1::tl1) (hd2::tl2) = if hd1 = hd2 then ipCmp tl1 tl2 else false
+          | ipCmp _ _ = false
+    in ipCmp (#ipaddr pktID1) (#ipaddr pktID2) andalso (#id pktID1) = (#id pktID2)
+    end 
+
 val mac = [123, 124, 125, 126, 127, 128]
 
-val packetList : (int * (packet list ref)) list ref = ref []
+val packetList : (packetId * (packet list ref)) list ref = ref []
 
 val listenOn = ref []
 
 fun bindUDP port cbf = listenOn := (port, cbf) :: !listenOn 
 
-fun addPacket p id  = 
-    case List.find (fn (id2, _) => id = id2) (!packetList) of 
+(* TODO: what if the first added packet is not the first packet *)
+fun addPacket p pktID = 
+    case List.find (fn (pktID2, _) => pktIDCmp pktID pktID2) (!packetList) of 
         SOME (_, l) => l := p :: (!l)
-    |   NONE => packetList := (id, ref [p]) :: (!packetList)
+    |   NONE => packetList := (pktID, ref [p]) :: (!packetList)
 
-fun assemblePacket id prot =
+fun assemblePacket pktID prot =
     let fun findPacket [] _ = raise Fail "An error occured while assembling an IPv4 packet."
-          | findPacket ((id2, l)::t) i = if id = id2 then (i, l) else findPacket t (i+1)
+          | findPacket ((pktID2, l)::t) i = if pktIDCmp pktID pktID2 then (i, l) else findPacket t (i+1)
         val (index, pl) = findPacket (!packetList) 0
-    in
-        packetList := List.drop (!packetList, index);
-        case prot of 
-            UDP => 
-                List.foldl 
-                    (fn (Packet p, init) => 
-                        let val (_, udpPay) = decodeUDP (#data p)
-                        in udpPay ^ init end
-                    ) 
-                    "" (!pl)
-        |   _ => raise Fail "Unimplemented protocol."
+        fun sortFragments [] accl = accl
+          | sortFragments (h::t) [] = sortFragments t [h]
+          | sortFragments (h1::t1) (h2::t2) = 
+                let val (Packet p1, Packet p2) = (h1, h2)
+                in  if (#offset p1) <= (#offset p2) 
+                    then sortFragments t1 (h1::h2::t2)
+                    else sortFragments t1 (h2::(sortFragments [h1] t2))
+                end  
+    in  packetList := List.drop (!packetList, index);
+        sortFragments pl [] |> List.foldl (fn (Packet p, init) => init ^(#data p)) "" (!pl)
     end
 
 fun handleArp ethFrame (Header_Eth ethHeader) =
@@ -66,58 +81,71 @@ fun handleIPv4 ethFrame (Header_Eth ethHeader) =
     (* let val ipv4 = String.extract (s, 14, NONE) |> decode_IPv4 |> verifyChecksumIPv4 *)
     let val (Header_IPv4 ipv4Header, ipv4Pay) = String.extract (ethFrame, 14, NONE) |> decodeIPv4
         val (Header_UDP udpHeader, udpPay) = ipv4Pay |> decodeUDP
-    in  addPacket (Packet {data = ipv4Pay, offset = #fragment_offset ipv4Header}) (#identification ipv4Header);
+    in  
+        addPacket (Packet {data = ipv4Pay, offset = #fragment_offset ipv4Header}) (#identification ipv4Header);
         printUDPHeader (Header_UDP udpHeader);
         if isFragmented (Header_IPv4 ipv4Header) then (print "Got fragmented packet\n")
         else 
-        (let val dataGotten = assemblePacket (#identification ipv4Header) UDP 
-             val found = List.find (fn (port, cb) => (#dest_port udpHeader) = port) (!listenOn)
-             fun send payload = 
-                (let 
-                    val udpPay =
-                        encodeUDP 
-                           (Header_UDP {
-                                source_port = (#dest_port udpHeader),
-                                dest_port = (#source_port udpHeader),
-                                length = (#length udpHeader),
-                                checksum = (#checksum udpHeader)
-                            })
-                            payload 
-                    val ipv4Pay =
-                        encodeIpv4
-                            (Header_IPv4 {
-                                version = (#version ipv4Header),
-                                ihl = (#ihl ipv4Header),
-                                dscp = (#dscp ipv4Header),
-                                ecn = (#ecn ipv4Header),
-                                total_length = (#total_length ipv4Header),
-                                identification = (#identification ipv4Header),
-                                flags = (#flags ipv4Header),
-                                fragment_offset = (#fragment_offset ipv4Header),
-                                time_to_live = (#time_to_live ipv4Header),
-                                protocol = (#protocol ipv4Header),
-                                header_checksum = (#header_checksum ipv4Header),
-                                source_addr = (#dest_addr ipv4Header),
-                                dest_addr = (#source_addr ipv4Header) 
-                            })
-                            udpPay
-                    val ethPay =
-                        encodeEthFrame 
-                            (Header_Eth {et = IPv4, dstMac = #srcMac ethHeader, srcMac = mac}) 
-                            ipv4Pay
-                in 
-                    print "Recieved IPv4 packet\n";
-                    dataGotten ^ "\n" |> print;
-                    ([0, 0, 8, 0] |> byteListToString) ^ ethPay
-                    |> toByteList 
-                    |> write_tap 
-                end)
-            in
-                (case found of
-                      SOME (_, cb) => cb dataGotten |> send
-                    | NONE => "Port is not mapped to a function." |> send)
-            end)
+            let 
+                val dataGotten = assemblePacket (#identification ipv4Header) UDP 
+                val found = List.find (fn (port, cb) => (#dest_port udpHeader) = port) (!listenOn)
+                
+                fun send payload =
+                    let  
+                        val size = String.size payload
+                        val numOfFrags = Real.ceil(Real.fromInt size / Real.fromInt 1500)
+                        val fragments = List.tabulate (numOfFrags, fn i =>
+                            let 
+                                (* val fragPay = Substring.full (Substring.full (i * 1500) payload) *)
+                                val fragPay = String.substring (payload, (i*1500), (Int.min(1500, size-(i*1500))))
+                                val header =
+                                    Header_UDP {
+                                        source_port = (#dest_port udpHeader),
+                                        dest_port = (#source_port udpHeader),
+                                        length = 
+                                            if i = numOfFrags-1 then 
+                                                size - (i * 1500) + 8
+                                            else
+                                                1500,
+                                        checksum = (#checksum udpHeader)
+                                    }
+                                val udpPay = encodeUDP header fragPay
+                                val ipv4Pay =
+                                    encodeIpv4
+                                        (Header_IPv4 {
+                                            version = (#version ipv4Header),
+                                            ihl = (#ihl ipv4Header),
+                                            dscp = (#dscp ipv4Header),
+                                            ecn = (#ecn ipv4Header),
+                                            total_length = (#total_length ipv4Header),
+                                            identification = (#identification ipv4Header),
+                                            flags = (#flags ipv4Header),
+                                            fragment_offset = (#fragment_offset ipv4Header),
+                                            time_to_live = (#time_to_live ipv4Header),
+                                            protocol = (#protocol ipv4Header),
+                                            header_checksum = (#header_checksum ipv4Header),
+                                            source_addr = (#dest_addr ipv4Header),
+                                            dest_addr = (#source_addr ipv4Header) 
+                                        })
+                                        udpPay
+                                val ethPay =
+                                    encodeEthFrame 
+                                        (Header_Eth {et = IPv4, dstMac = #srcMac ethHeader, srcMac = mac}) 
+                                        ipv4Pay
+                            in 
+                                ([0, 0, 8, 0] |> byteListToString) ^ ethPay
+                                |> toByteList 
+                                |> write_tap 
+                            end
+                        )
+                    in
+                        fragments
+                    end
+            in 
+                print "hej"
+            end
     end
+
 
 fun listen () = 
     let 
