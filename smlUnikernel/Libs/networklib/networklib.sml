@@ -1,15 +1,11 @@
-datatype packet = Packet of {
-    data: string,
-    offset: int
-}
+val mac = [123, 124, 125, 126, 127, 128]
 
 datatype packetId = PktId of {
     ipaddr: int list,
-    id: int,
-    prot: protocol,
-    fragmentSum: int ref,
-    packetLength: int
+    id: int
 }
+
+datatype packet = Packet of { data: string, offset: int} 
 
 fun pktIDCmp (PktId pktID1) (PktId pktID2) = 
     let fun ipCmp [] [] = true
@@ -17,8 +13,6 @@ fun pktIDCmp (PktId pktID1) (PktId pktID2) =
           | ipCmp _ _ = false
     in ipCmp (#ipaddr pktID1) (#ipaddr pktID2) andalso (#id pktID1) = (#id pktID2)
     end 
-
-val mac = [123, 124, 125, 126, 127, 128]
 
 val packetList : (packetId * (packet list ref)) list ref = ref []
 
@@ -32,7 +26,7 @@ fun addPacket p pktID =
         SOME (_, l) => l := p :: (!l)
     |   NONE => packetList := (pktID, ref [p]) :: (!packetList)
 
-fun assemblePacket pktID prot =
+fun assemblePacket pktID prot = 
     let fun findPacket [] _ = raise Fail "An error occured while assembling an IPv4 packet."
           | findPacket ((pktID2, l)::t) i = if pktIDCmp pktID pktID2 then (i, l) else findPacket t (i+1)
         val (index, pl) = findPacket (!packetList) 0
@@ -45,13 +39,13 @@ fun assemblePacket pktID prot =
                     else sortFragments t1 (h2::(sortFragments [h1] t2))
                 end  
     in  packetList := List.drop (!packetList, index);
-        sortFragments pl [] |> List.foldl (fn (Packet p, init) => init ^(#data p)) "" (!pl)
+        sortFragments (!pl) [] |> List.foldl (fn (Packet p, init) => init ^(#data p)) ""
     end
 
 fun handleArp ethFrame (Header_Eth ethHeader) =
     let val arp = SOME (String.extract (ethFrame, 14, NONE) |> decodeArp) handle _ => NONE
     in  case arp of
-            SOME (Header_ARP arpHeader) => 
+              SOME (Header_ARP arpHeader) => 
                 let val arpPay = encodeArp (Header_ARP {
                         htype = 1, 
                         ptype = 0x0800,
@@ -78,16 +72,15 @@ fun handleArp ethFrame (Header_Eth ethHeader) =
     end
 
 fun handleIPv4 ethFrame (Header_Eth ethHeader) = 
-    (* let val ipv4 = String.extract (s, 14, NONE) |> decode_IPv4 |> verifyChecksumIPv4 *)
     let val (Header_IPv4 ipv4Header, ipv4Pay) = String.extract (ethFrame, 14, NONE) |> decodeIPv4
         val (Header_UDP udpHeader, udpPay) = ipv4Pay |> decodeUDP
     in  
-        addPacket (Packet {data = ipv4Pay, offset = #fragment_offset ipv4Header}) (#identification ipv4Header);
+        addPacket (Packet {data = ipv4Pay, offset = #fragment_offset ipv4Header}) (PktId {ipaddr = #dest_addr ipv4Header, id = #identification ipv4Header});
         printUDPHeader (Header_UDP udpHeader);
         if isFragmented (Header_IPv4 ipv4Header) then (print "Got fragmented packet\n")
         else 
             let 
-                val dataGotten = assemblePacket (#identification ipv4Header) UDP 
+                val dataGotten = assemblePacket (PktId {ipaddr = #dest_addr ipv4Header, id = #identification ipv4Header}) UDP 
                 val found = List.find (fn (port, cb) => (#dest_port udpHeader) = port) (!listenOn)
                 
                 fun send payload =
