@@ -1,4 +1,4 @@
-datatype prot = ICMP | TCP | UDP | UNKNOWN
+datatype protocol = ICMP | TCP | UDP | UNKNOWN
 
 datatype header_IPv4 = Header_IPv4 of {
     version : int,
@@ -10,7 +10,7 @@ datatype header_IPv4 = Header_IPv4 of {
     flags : int,
     fragment_offset : int,
     time_to_live : int,
-    protocol : prot,
+    protocol : protocol,
     header_checksum : int,
     source_addr : int list,
     dest_addr : int list
@@ -54,6 +54,7 @@ fun protToString p =
     | UDP => "UDP"
     | _ => "Uknown protocol"
 
+(* TODO: Does not handle options, ignores ihl *)
 fun decodeIPv4 s = (Header_IPv4 {
     version = getLBits (String.substring (s, 0, 1) |> convertRawBytes) 4,
     ihl = getRBits (String.substring (s, 0, 1) |> convertRawBytes) 4,
