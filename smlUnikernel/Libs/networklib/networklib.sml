@@ -32,28 +32,24 @@ fun initPktID (Header_IPv4 ipv4Hdr) = PktID {
     prot = #protocol ipv4Hdr
 }
 
-(* fun getFragmentList (Header_IPv4 ipv4Hdr) =
-    let val pktID1 = initPktID (Header_IPv4 ipv4Hdr)
-    in  List.find (fn (pktID2, _) => pktIDCmp pktID1 pktID2) (!fragmentBuffer)
-    end
-
-fun getPacketArray (Header_IPv4 ipv4Hdr) =
-    let val pktID1 = initPktID (Header_IPv4 ipv4Hdr)
-    in  List.find (fn (pktID2, _) => pktIDCmp pktID1 pktID2) (!packetList)
-    end *)
-
 fun updatePacketArray pli arri arr payload = 
     if pli < String.size payload then 
-        (Array.update (arr, arri, String.sub (payload, pli));
+        ( 
+        (* print "Update array\n"; *)
+        Array.update (arr, arri, String.sub (payload, pli));
+        (* print "Array updated\n"; *)
         updatePacketArray (pli+1) (arri+1) arr payload)
     else ()
 
 fun initAssembling (Header_IPv4 ipv4Hdr) payload = 
     let val pktID = initPktID (Header_IPv4 ipv4Hdr) 
-        val arr = Array.array (#fragment_offset ipv4Hdr + String.size payload, #"\000")
-    in  (case findi (fn (pktID2, _) => pktIDCmp pktID pktID2) (!fragmentBuffer)  of 
+        val arr = Array.array ((#fragment_offset ipv4Hdr) * 8 + String.size payload, #"\000")
+    in  print "initializing assemblng\n";
+        (case findi (fn (pktID2, _) => pktIDCmp pktID pktID2) (!fragmentBuffer)  of 
             SOME (i, (_, l)) => (
-                List.app (fn (Fragment f) => updatePacketArray 0 (#offset f) arr (#data f)) (!l); 
+                "Found fragmentList with length: " ^ (List.length (!l) |> Int.toString) ^ "\n" |> print;
+                List.app (fn (Fragment f) => updatePacketArray 0 (if (#offset f) = 0 then 0 else (#offset f) * 8) arr (#data f)) (!l); 
+                print "Updated packet\n";
                 fragmentBuffer := List.drop (!fragmentBuffer, i))
         |   NONE => ());
         assemblingList := (pktID, arr) :: (!assemblingList)
@@ -74,6 +70,7 @@ fun assemblePacket ipv4Hdr =
     let val pktID = initPktID ipv4Hdr
     in  case findi (fn (pktID2, _) => pktIDCmp pktID pktID2) (!assemblingList) of 
             SOME (i, (_, a)) => (
+                print "Now assembling \n";
                 assemblingList := List.drop (!assemblingList, i);
                 Array.foldr (op ::) [] a |> String.implode
             )
@@ -160,10 +157,14 @@ fun handleIPv4 (Header_Eth ethHeader) ethFrame =
             then SOME ipv4Pay
             else (addFragment (Header_IPv4 ipv4Header) ipv4Pay;
                  if (#flags ipv4Header) = 0 
-                 then (initAssembling (Header_IPv4 ipv4Header);
-                      SOME (assemblePacket (Header_IPv4 ipv4Header)))
+                 then ( print "Assembling in progess\n";
+                        initAssembling (Header_IPv4 ipv4Header) ipv4Pay;
+                        SOME (assemblePacket (Header_IPv4 ipv4Header)))
                  else NONE)
     in  print "ipv4 called\n";
+        print "ipv4pay:\n";
+        print ipv4Pay;
+        printIPv4 (Header_IPv4 ipv4Header);
         case payloadOpt of 
           SOME payload => (
             case (#protocol ipv4Header) of 
@@ -187,21 +188,3 @@ fun listen () =
         );
         listen ()
     end
-
-                (* printIPv4 ipv4Header;
-                case List.find (fn (pktID2, _) => pktIDCmp pktID pktID2) ipv4Header of
-                    SOME (PktID pktID, _) => 
-                        (print "Fragmentsum: ";
-                        Int.toString (!(#fragmentSum pktID)) |> print;
-                        print "\nLength: ";
-                        Int.toString (#length pktID) |> print;
-                        print "\n";
-                        if !(#fragmentSum pktID) = (#length pktID) then 
-                            let val pkt = assemblePacket ipv4Header
-                                val Header_IPv4 ipv4Header2 = ipv4Header
-                            in  case (#protocol ipv4Header2) of 
-                                UDP => handleUDP (#srcMac ethHeader) ipv4Header pkt
-                                | _ => ()
-                            end
-                        else ())
-                |   NONE => () *)

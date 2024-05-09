@@ -128,8 +128,8 @@ char* read_tap(int addr, Region str_r, Context ctx) {
         setup(tap_name);
     }
 
-    char buf[1500];
-    ssize_t bytes_read = read(tapfd, buf, 1500);
+    char buf[1518]; // MTU, but do not know why 18
+    ssize_t bytes_read = read(tapfd, buf, 1518);
 
     // Null-terminate the buffer
     buf[bytes_read] = '\0';
