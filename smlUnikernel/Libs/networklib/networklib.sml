@@ -5,12 +5,10 @@ val ipAddress = [10, 0, 0, 2]
 datatype packetID = PktID of {
     ipaddr: int list,
     id: int,
-    prot: protocol,
-    length: int,
-    fragmentSum: int ref
+    prot: protocol
 }
 
-datatype packet = Packet of { data: string, offset: int} 
+datatype fragment = Fragment of { data: string, offset: int} 
 
 fun pktIDCmp (PktID pktID1) (PktID pktID2) = 
     let fun ipCmp [] [] = true
@@ -19,52 +17,67 @@ fun pktIDCmp (PktID pktID1) (PktID pktID2) =
     in ipCmp (#ipaddr pktID1) (#ipaddr pktID2) andalso (#id pktID1) = (#id pktID2) andalso (#prot pktID1) = (#prot pktID2)
     end  
 
-val packetList : (packetID * (char array)) list ref = ref []
+val fragmentBuffer : (packetID * (fragment list ref)) list ref = ref []
+
+val assemblingList : (packetID * (char array)) list ref = ref []
 
 val listenOn = ref []
 
 fun bindUDP (port : int) (cbf : string -> string) = listenOn := (port, cbf) :: !listenOn 
 
+(* We assume that destination is the same *)
 fun initPktID (Header_IPv4 ipv4Hdr) = PktID {
-    ipaddr = (#source_addr ipv4Hdr), 
-    id = (#identification ipv4Hdr), 
-    prot = (#protocol ipv4Hdr), 
-    length = #total_length ipv4Hdr, 
-    fragmentSum = ref 0
+    ipaddr = #source_addr ipv4Hdr, 
+    id = #identification ipv4Hdr, 
+    prot = #protocol ipv4Hdr
 }
 
-fun getPacket (Header_IPv4 ipv4Hdr) =
+(* fun getFragmentList (Header_IPv4 ipv4Hdr) =
     let val pktID1 = initPktID (Header_IPv4 ipv4Hdr)
-    in  List.find (fn (pktID2, _) => pktIDCmp pktID1 pktID2) (!packetList)
+    in  List.find (fn (pktID2, _) => pktIDCmp pktID1 pktID2) (!fragmentBuffer)
     end
 
-fun addPacket (Header_IPv4 ipv4Hdr) payload = 
-    let fun updatePacket arr pli arri = 
-            if pli < String.size payload then 
-                (Array.update (arr, arri, String.sub (payload, pli));
-                updatePacket arr (pli+1) (arri+1))
-            else ()
-    in  print "Adding packet\n";
-        case getPacket (Header_IPv4 ipv4Hdr) of 
-            SOME (PktID pktID, arr) =>
-                (#fragmentSum pktID := !(#fragmentSum pktID) + String.size payload;
-                updatePacket arr 0 (#fragment_offset ipv4Hdr))
-        |   NONE => 
-            let val PktID pktID = initPktID (Header_IPv4 ipv4Hdr) 
-                val arr = Array.array (#total_length ipv4Hdr, #"\000")
-            in  (#fragmentSum pktID) := 20 + (String.size payload);
-                updatePacket arr 0 (#fragment_offset ipv4Hdr);
-                packetList := (PktID pktID, arr) :: (!packetList)
-            end
+fun getPacketArray (Header_IPv4 ipv4Hdr) =
+    let val pktID1 = initPktID (Header_IPv4 ipv4Hdr)
+    in  List.find (fn (pktID2, _) => pktIDCmp pktID1 pktID2) (!packetList)
+    end *)
+
+fun updatePacketArray pli arri arr payload = 
+    if pli < String.size payload then 
+        (Array.update (arr, arri, String.sub (payload, pli));
+        updatePacketArray (pli+1) (arri+1) arr payload)
+    else ()
+
+fun initAssembling (Header_IPv4 ipv4Hdr) payload = 
+    let val pktID = initPktID (Header_IPv4 ipv4Hdr) 
+        val arr = Array.array (#fragment_offset ipv4Hdr + String.size payload, #"\000")
+    in  (case findi (fn (pktID2, _) => pktIDCmp pktID pktID2) (!fragmentBuffer)  of 
+            SOME (i, (_, l)) => (
+                List.app (fn (Fragment f) => updatePacketArray 0 (#offset f) arr (#data f)) (!l); 
+                fragmentBuffer := List.drop (!fragmentBuffer, i))
+        |   NONE => ());
+        assemblingList := (pktID, arr) :: (!assemblingList)
+    end
+
+fun addFragment (Header_IPv4 ipv4Hdr) payload = 
+    let val pktID = initPktID (Header_IPv4 ipv4Hdr)
+    in  case List.find (fn (pktID2, _) => pktIDCmp pktID pktID2) (!fragmentBuffer) of 
+            SOME (_, l) => l := (Fragment {data = payload, offset = #fragment_offset ipv4Hdr}) :: (!l)
+        |   NONE => (
+            case List.find (fn (pktID2, _) => pktIDCmp pktID pktID2) (!assemblingList) of 
+                SOME (_, a) => updatePacketArray 0 (#fragment_offset ipv4Hdr) a payload
+            |   NONE => fragmentBuffer := (pktID, ref [Fragment {data = payload, offset = #fragment_offset ipv4Hdr}]) :: (!fragmentBuffer)
+        ) 
     end
 
 fun assemblePacket ipv4Hdr = 
     let val pktID = initPktID ipv4Hdr
-        fun findPacket [] _ = raise Fail "An error occured while assembling an IPv4 packet."
-          | findPacket ((pktID2, arr)::t) i = if pktIDCmp pktID pktID2 then (i, arr) else findPacket t (i+1)
-        val (index, arr) = findPacket (!packetList) 0
-    in  packetList := List.drop (!packetList, index);
-        Array.foldr (op ::) [] arr |> String.implode
+    in  case findi (fn (pktID2, _) => pktIDCmp pktID pktID2) (!assemblingList) of 
+            SOME (i, (_, a)) => (
+                assemblingList := List.drop (!assemblingList, i);
+                Array.foldr (op ::) [] a |> String.implode
+            )
+        |   NONE => raise Fail "Could not assemble packet"
     end
 
 fun ethSend et dstMac payload = 
@@ -82,17 +95,17 @@ fun ethSend et dstMac payload =
 fun ipv4Send ({identification, protocol, dest_addr, dstMac}) payload = 
     let val ipv4Header = 
             encodeIpv4 (Header_IPv4 {
-                version = 4,            (* This is only for version 4 (ipv4) *)
-                ihl = 5,                (* Options are not allowed *)
-                dscp = 0,               (* Service class is standard *)
-                ecn = 0,                (* Not ECN capable *)
+                version = 4,                (* This is only for version 4 (ipv4) *)
+                ihl = 5,                    (* Options are not allowed *)
+                dscp = 0,                   (* Service class is standard *)
+                ecn = 0,                    (* Not ECN capable *)
                 total_length = 20 + (String.size payload),
                 identification = identification,
-                flags = 0,
+                flags = 0,                  
                 fragment_offset = 0,
-                time_to_live = 128,     (* Hard-coded time_to_live *)
+                time_to_live = 128,         (* Hard-coded time_to_live *)
                 protocol = protocol,
-                header_checksum = 0,    (* Will be calculated in encode *)  
+                header_checksum = 0,        (* Will be calculated in encode *)  
                 source_addr = ipAddress,
                 dest_addr = dest_addr 
             }) payload
@@ -101,7 +114,8 @@ fun ipv4Send ({identification, protocol, dest_addr, dstMac}) payload =
 
 fun handleArp (Header_Eth ethHeader) ethFrame =
     let val arp = SOME (String.extract (ethFrame, 14, NONE) |> decodeArp) handle _ => NONE
-    in  case arp of
+    in  print "Arp called\n";
+        case arp of
             SOME (Header_ARP arpHeader) => 
                 encodeArp (Header_ARP {
                     htype = 1, 
@@ -138,26 +152,25 @@ fun handleUDP dstMac (Header_IPv4 ipv4Header) payload =
                                             |> ipv4Send ({identification = (#identification ipv4Header), dstMac = dstMac, protocol = UDP, dest_addr = #source_addr ipv4Header})
     end
 
+(* TODO: Handle DF flag*)
 fun handleIPv4 (Header_Eth ethHeader) ethFrame = 
-    let val (ipv4Header, ipv4Pay) = String.extract (ethFrame, 14, NONE) |> decodeIPv4
-    in  addPacket ipv4Header ipv4Pay;
-        printIPv4 ipv4Header;
-        case getPacket ipv4Header of
-            SOME (PktID pktID, _) => 
-                (print "Fragmentsum: ";
-                Int.toString (!(#fragmentSum pktID)) |> print;
-                print "\nLength: ";
-                Int.toString (#length pktID) |> print;
-                print "\n";
-                if !(#fragmentSum pktID) = (#length pktID) then 
-                    let val pkt = assemblePacket ipv4Header
-                        val Header_IPv4 ipv4Header2 = ipv4Header
-                    in  case (#protocol ipv4Header2) of 
-                          UDP => handleUDP (#srcMac ethHeader) ipv4Header pkt
-                        | _ => ()
-                    end
-                else ())
-        |   NONE => ()
+    let val (Header_IPv4 ipv4Header, ipv4Pay) = String.extract (ethFrame, 14, NONE) |> decodeIPv4
+        val payloadOpt = 
+            if (#fragment_offset ipv4Header) = 0 andalso (#flags ipv4Header) = 2 
+            then SOME ipv4Pay
+            else (addFragment (Header_IPv4 ipv4Header) ipv4Pay;
+                 if (#flags ipv4Header) = 0 
+                 then (initAssembling (Header_IPv4 ipv4Header);
+                      SOME (assemblePacket (Header_IPv4 ipv4Header)))
+                 else NONE)
+    in  print "ipv4 called\n";
+        case payloadOpt of 
+          SOME payload => (
+            case (#protocol ipv4Header) of 
+              UDP => handleUDP (#dstMac ethHeader) (Header_IPv4 ipv4Header) payload
+            | _ => print "ipv4-handler: protocol not supported\n"
+          )
+        | NONE => ()
     end
 
 fun listen () = 
@@ -170,7 +183,25 @@ fun listen () =
         (case et of 
               ARP => handleArp ethHeader ethFrame
             | IPv4 => handleIPv4 ethHeader ethFrame
-            | _ => print "Recieved other packet\n"
+            | _ => print "listen: protocol not supported\n"
         );
         listen ()
     end
+
+                (* printIPv4 ipv4Header;
+                case List.find (fn (pktID2, _) => pktIDCmp pktID pktID2) ipv4Header of
+                    SOME (PktID pktID, _) => 
+                        (print "Fragmentsum: ";
+                        Int.toString (!(#fragmentSum pktID)) |> print;
+                        print "\nLength: ";
+                        Int.toString (#length pktID) |> print;
+                        print "\n";
+                        if !(#fragmentSum pktID) = (#length pktID) then 
+                            let val pkt = assemblePacket ipv4Header
+                                val Header_IPv4 ipv4Header2 = ipv4Header
+                            in  case (#protocol ipv4Header2) of 
+                                UDP => handleUDP (#srcMac ethHeader) ipv4Header pkt
+                                | _ => ()
+                            end
+                        else ())
+                |   NONE => () *)
