@@ -28,6 +28,6 @@ fun printUDPHeader (Header_UDP {
 fun encodeUDP (Header_UDP { length, source_port, dest_port, checksum}) data =
     (intToRawbyteString source_port 2) ^
     (intToRawbyteString dest_port 2) ^
-    (intToRawbyteString (8 + String.size data) 2) ^
+    (intToRawbyteString (String.size data + 8) 2) ^ (* Fix this *)
     (intToRawbyteString 0 2) ^
     data

@@ -128,8 +128,8 @@ char* read_tap(int addr, Region str_r, Context ctx) {
         setup(tap_name);
     }
 
-    char buf[1500];
-    ssize_t bytes_read = read(tapfd, buf, 1500);
+    char buf[1518]; // MTU + 18 (the 18 bytes are header and frame check sequence)
+    ssize_t bytes_read = read(tapfd, buf, 1518);
 
     // Null-terminate the buffer
     buf[bytes_read] = '\0';
@@ -138,8 +138,8 @@ char* read_tap(int addr, Region str_r, Context ctx) {
 }
 
 void write_tap(uintptr_t byte_list) {
-    char toWrite_buf[1500];
-    size_t toWrite_len = 1500;
+    char toWrite_buf[1518];
+    size_t toWrite_len = 1518;
 
     uintptr_t ys;
     int i = 0;
