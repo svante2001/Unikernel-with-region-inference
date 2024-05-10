@@ -2,6 +2,8 @@ val mac = [123, 124, 125, 126, 127, 128]
 
 val ipAddress = [10, 0, 0, 2]
 
+val mtu = 1500
+
 datatype packetID = PktID of {
     ipaddr: int list,
     id: int,
@@ -89,24 +91,45 @@ fun ethSend et dstMac payload =
         |> write_tap
     end 
 
+(* Uses same identification as sender *)
 fun ipv4Send ({identification, protocol, dest_addr, dstMac}) payload = 
-    let val ipv4Header = 
-            encodeIpv4 (Header_IPv4 {
-                version = 4,                (* This is only for version 4 (ipv4) *)
-                ihl = 5,                    (* Options are not allowed *)
-                dscp = 0,                   (* Service class is standard *)
-                ecn = 0,                    (* Not ECN capable *)
-                total_length = 20 + (String.size payload),
-                identification = identification,
-                flags = 0,                  
-                fragment_offset = 0,
-                time_to_live = 128,         (* Hard-coded time_to_live *)
-                protocol = protocol,
-                header_checksum = 0,        (* Will be calculated in encode *)  
-                source_addr = ipAddress,
-                dest_addr = dest_addr 
-            }) payload
-    in  ethSend IPv4 dstMac ipv4Header
+    let val nfb = (mtu - 20) div 8
+        fun sendFragments offset payload = 
+            if String.size payload + 20 <= mtu 
+            then 
+                ethSend IPv4 dstMac (encodeIpv4 (Header_IPv4 {
+                        version = 4,                (* This is only for version 4 (ipv4) *)
+                        ihl = 5,                    (* Options are not allowed *)
+                        dscp = 0,                   (* Service class is standard *)
+                        ecn = 0,                    (* Not ECN capable *)
+                        total_length = 20 + (String.size payload),
+                        identification = identification,
+                        flags = 0,                  (* No more fragments *)                  
+                        fragment_offset = offset,
+                        time_to_live = 128,         (* Hard-coded ti)me_to_live *)
+                        protocol = protocol,
+                        header_checksum = 0,        (* Will be calculated in encode *)  
+                        source_addr = ipAddress,
+                        dest_addr = dest_addr 
+                    }) payload)
+            else 
+                (ethSend IPv4 dstMac (encodeIpv4 (Header_IPv4 {
+                    version = 4,                (* This is only for version 4 (ipv4) *)
+                    ihl = 5,                    (* Options are not allowed *)
+                    dscp = 0,                   (* Service class is standard *)
+                    ecn = 0,                    (* Not ECN capable *)
+                    total_length = 20 + (nfb * 8),
+                    identification = identification,
+                    flags = 1,                  (* More fragments *)                  
+                    fragment_offset = offset,
+                    time_to_live = 128,         (* Hard-coded time_to_live *)
+                    protocol = protocol,
+                    header_checksum = 0,        (* Will be calculated in encode *)  
+                    source_addr = ipAddress,
+                    dest_addr = dest_addr 
+                }) (String.substring (payload, 0, nfb * 8)));
+                sendFragments (offset + nfb) (String.extract (payload, nfb*8, NONE)))
+    in  sendFragments 0 payload
     end
 
 fun handleArp (Header_Eth ethHeader) ethFrame =
@@ -138,10 +161,10 @@ fun handleUDP dstMac (Header_IPv4 ipv4Header) payload =
         case found of 
           SOME (_, cb) => 
             let val payload = cb udpPayload 
-            in  encodeUDP (Header_UDP {length = 20 + String.size payload , source_port = (#dest_port udpHeader), dest_port = (#source_port udpHeader), checksum = 0}) payload
+            in  encodeUDP (Header_UDP {length = 0, source_port = (#dest_port udpHeader), dest_port = (#source_port udpHeader), checksum = 0}) payload
                 |> ipv4Send ({identification = (#identification ipv4Header), dstMac = dstMac, protocol = UDP, dest_addr = #source_addr ipv4Header})
             end
-        | NONE =>  encodeUDP (Header_UDP {  length = 20 + String.size payload, 
+        | NONE =>  encodeUDP (Header_UDP {  length = 8 + String.size payload, 
                                             source_port = (#dest_port udpHeader), 
                                             dest_port = (#source_port udpHeader), 
                                             checksum = 0}) 
@@ -155,7 +178,7 @@ fun handleIPv4 (Header_Eth ethHeader) ethFrame =
         val payloadOpt = 
             if (#fragment_offset ipv4Header) = 0 andalso (#flags ipv4Header) = 2 
             then SOME ipv4Pay
-            else (addFragment (Header_IPv4 ipv4Header) ipv4Pay;
+            else (addFragment (Header_IPv4 ipv4Header) ipv4Pay; (* Assumes packets arrive in order *)
                  if (#flags ipv4Header) = 0 
                  then ( print "Assembling in progess\n";
                         initAssembling (Header_IPv4 ipv4Header) ipv4Pay;
