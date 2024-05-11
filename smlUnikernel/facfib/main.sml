@@ -50,11 +50,8 @@ val _ = (
     );
     bindUDP 8082 (
         fn data =>
-            let val n = (data |> Int.fromString) |> valOf
-                val ff = fastFib n |> IntInf.toString
-            in
-                print ff;
-                ff
+            let val n = data |> Int.fromString |> valOf
+            in fastFib n |> IntInf.toString
             end
     );
 
