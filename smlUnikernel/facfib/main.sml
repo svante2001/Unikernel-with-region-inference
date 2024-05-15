@@ -20,6 +20,21 @@ fun fib n : IntInf.int = (
         end
 )
 
+fun fastFib n : IntInf.int =
+    if n < 0 then raise Fail "Negative arguments not implemented"
+    else #1 (fastFibH n)
+
+and fastFibH 0 : IntInf.int * IntInf.int = (IntInf.fromInt 0, IntInf.fromInt 1)
+  | fastFibH n : IntInf.int * IntInf.int =
+    let
+        val (a, b) = fastFibH (n div 2)
+        val c = a * (b * 2 - a)
+        val d = a * a + b * b
+    in
+        if n mod 2 = 0 then (c, d)
+        else (d, c + d)
+    end
+
 val _ = (
     bindUDP 8080 (
         fn data => 
@@ -33,5 +48,12 @@ val _ = (
             in  fib n |> IntInf.toString
             end
     );
+    bindUDP 8082 (
+        fn data =>
+            let val n = data |> Int.fromString |> valOf
+            in fastFib n |> IntInf.toString
+            end
+    );
+
     listen ()
 )
