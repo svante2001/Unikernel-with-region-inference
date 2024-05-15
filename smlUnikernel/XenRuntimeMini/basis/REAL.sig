@@ -22,9 +22,9 @@ value.
 *)
 
 signature REAL = sig
-  (* type real *)
+  type real
 
-  (* structure Math : MATH
+  structure Math : MATH
 
   val radix        : int
   val precision    : int
@@ -99,7 +99,7 @@ signature REAL = sig
   val fmt          : StringCvt.realfmt -> real -> string
   val toString     : real -> string
   val scan         : (char, 'a) StringCvt.reader -> (real, 'a) StringCvt.reader
-  val fromString   : string -> real option *)
+  val fromString   : string -> real option
 
 (*
   val toDecimal    : real -> IEEEReal.decimal_approx

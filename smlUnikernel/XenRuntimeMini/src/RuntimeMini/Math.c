@@ -6,6 +6,9 @@
 #include <xmalloc.h>
 #include <mini-os/lib.h>
 #include <mini-os/time.h>
+#include <math.h>
+#include <float.h>
+#include <fenv.h>
 #include "Math.h"
 #include "Tagging.h"
 #include "Exception.h"
@@ -386,355 +389,355 @@ divFloat(ssize_t d, ssize_t x, ssize_t y)
   return d;
 }
 
-// ssize_t
-// remFloat(ssize_t d, ssize_t x, ssize_t y)
-// {
-//   get_d(d) = fmod(get_d(x), get_d(y));
-//   set_dtag(d);
-//   return d;
-// }
+ssize_t
+remFloat(ssize_t d, ssize_t x, ssize_t y)
+{
+  get_d(d) = fmod(get_d(x), get_d(y));
+  set_dtag(d);
+  return d;
+}
 
-// ssize_t
-// realFloor(ssize_t d, ssize_t x)
-// {
-//   get_d(d) = floor(get_d(x));
-//   set_dtag(d);
-//   return d;
-// }
+ssize_t
+realFloor(ssize_t d, ssize_t x)
+{
+  get_d(d) = floor(get_d(x));
+  set_dtag(d);
+  return d;
+}
 
-// ssize_t
-// realCeil(ssize_t d, ssize_t x)
-// {
-//   get_d(d) = ceil(get_d(x));
-//   set_dtag(d);
-//   return d;
-// }
+ssize_t
+realCeil(ssize_t d, ssize_t x)
+{
+  get_d(d) = ceil(get_d(x));
+  set_dtag(d);
+  return d;
+}
 
-// ssize_t
-// realTrunc(ssize_t d, ssize_t x)
-// {
-//   get_d(d) = trunc(get_d(x));
-//   set_dtag(d);
-//   return d;
-// }
+ssize_t
+realTrunc(ssize_t d, ssize_t x)
+{
+  get_d(d) = trunc(get_d(x));
+  set_dtag(d);
+  return d;
+}
 
-// ssize_t
-// realRound(ssize_t d, ssize_t x)
-// {
-//   get_d(d) = round(get_d(x));
-//   set_dtag(d);
-//   return d;
-// }
+ssize_t
+realRound(ssize_t d, ssize_t x)
+{
+  get_d(d) = round(get_d(x));
+  set_dtag(d);
+  return d;
+}
 
-// long int
-// floorFloat(Context ctx, ssize_t f)
-// {
-//   double r;
-//   long int i;
+long int
+floorFloat(Context ctx, ssize_t f)
+{
+  double r;
+  long int i;
 
-//   r = get_d(f);
-//   if( r >= 0.0 )
-//     {
-//       if ( r >= (Max_Int_d + 1.0) )
-// 	{
-// 	  raise_exn(ctx,(uintptr_t)&exn_OVERFLOW);
-// 	}
-//       return (convertIntToML((long int) r));
-//     }
-//   if( r < Min_Int_d )
-//     {
-//       raise_exn(ctx,(uintptr_t)&exn_OVERFLOW);
-//     }
-//   i = (long int) r;
-//   if( r < ((double) i) )
-//     {
-//       i -= 1L;
-//     }
-//   return convertIntToML(i);
-// }
+  r = get_d(f);
+  if( r >= 0.0 )
+    {
+      if ( r >= (Max_Int_d + 1.0) )
+	{
+	  raise_exn(ctx,(uintptr_t)&exn_OVERFLOW);
+	}
+      return (convertIntToML((long int) r));
+    }
+  if( r < Min_Int_d )
+    {
+      raise_exn(ctx,(uintptr_t)&exn_OVERFLOW);
+    }
+  i = (long int) r;
+  if( r < ((double) i) )
+    {
+      i -= 1L;
+    }
+  return convertIntToML(i);
+}
 
-// ssize_t
-// truncFloat(Context ctx, ssize_t f)
-// {
-//   double r;
+ssize_t
+truncFloat(Context ctx, ssize_t f)
+{
+  double r;
 
-//   r = get_d(f);
-//   if ((r >= (Max_Int_d + 1.0)) || (r <= (Min_Int_d - 1.0)))
-//     {
-//       raise_exn(ctx,(uintptr_t)&exn_OVERFLOW);
-//     }
-//   return convertIntToML((ssize_t)r);
-// }
+  r = get_d(f);
+  if ((r >= (Max_Int_d + 1.0)) || (r <= (Min_Int_d - 1.0)))
+    {
+      raise_exn(ctx,(uintptr_t)&exn_OVERFLOW);
+    }
+  return convertIntToML((ssize_t)r);
+}
 
-// ssize_t
-// ceilFloat(Context ctx, ssize_t f)
-// {
-//   double arg;
-//   ssize_t i;
+ssize_t
+ceilFloat(Context ctx, ssize_t f)
+{
+  double arg;
+  ssize_t i;
 
-//   arg = get_d(f);
+  arg = get_d(f);
 
-//   if( arg >= 0.0 )
-//     {
-//       if( arg > Max_Int_d ) goto raise_ceil;
-//       i = (ssize_t) arg;
-//       if( arg > ((double) i) ) i += 1;
-//     }
-//   else
-//     {
-//       if( arg <= (Min_Int_d - 1.0) ) goto raise_ceil;
-//       i = (ssize_t) arg;
-//     }
-//   return convertIntToML(i);
+  if( arg >= 0.0 )
+    {
+      if( arg > Max_Int_d ) goto raise_ceil;
+      i = (ssize_t) arg;
+      if( arg > ((double) i) ) i += 1;
+    }
+  else
+    {
+      if( arg <= (Min_Int_d - 1.0) ) goto raise_ceil;
+      i = (ssize_t) arg;
+    }
+  return convertIntToML(i);
 
-//  raise_ceil:
-//   raise_exn(ctx,(uintptr_t)&exn_OVERFLOW);
-//   return 0;                          // never reached
-// }
+ raise_ceil:
+  raise_exn(ctx,(uintptr_t)&exn_OVERFLOW);
+  return 0;                          // never reached
+}
 
-// ssize_t
-// sqrtFloat(ssize_t d, ssize_t s)
-// {
-//   get_d(d) = sqrt(get_d(s));
-//   set_dtag(d);
-//   return d;
-// }
+ssize_t
+sqrtFloat(ssize_t d, ssize_t s)
+{
+  get_d(d) = sqrt(get_d(s));
+  set_dtag(d);
+  return d;
+}
 
-// ssize_t
-// sinFloat(ssize_t d, ssize_t s)
-// {
-//   get_d(d) = sin(get_d(s));
-//   set_dtag(d);
-//   return d;
-// }
+ssize_t
+sinFloat(ssize_t d, ssize_t s)
+{
+  get_d(d) = sin(get_d(s));
+  set_dtag(d);
+  return d;
+}
 
-// ssize_t
-// cosFloat(ssize_t d, ssize_t s)
-// {
-//   get_d(d) = cos(get_d(s));
-//   set_dtag(d);
-//   return d;
-// }
+ssize_t
+cosFloat(ssize_t d, ssize_t s)
+{
+  get_d(d) = cos(get_d(s));
+  set_dtag(d);
+  return d;
+}
 
-// ssize_t
-// atanFloat (ssize_t d, ssize_t s)
-// {
-//   get_d (d) = atan (get_d (s));
-//   set_dtag(d);
-//   return d;
-// }
+ssize_t
+atanFloat (ssize_t d, ssize_t s)
+{
+  get_d (d) = atan (get_d (s));
+  set_dtag(d);
+  return d;
+}
 
-// ssize_t
-// asinFloat (ssize_t d, ssize_t s)
-// {
-//   get_d (d) = asin (get_d (s));
-//   set_dtag(d);
-//   return d;
-// }
+ssize_t
+asinFloat (ssize_t d, ssize_t s)
+{
+  get_d (d) = asin (get_d (s));
+  set_dtag(d);
+  return d;
+}
 
-// ssize_t
-// acosFloat (ssize_t d, ssize_t s)
-// {
-//   get_d (d) = acos (get_d (s));
-//   set_dtag(d);
-//   return d;
-// }
+ssize_t
+acosFloat (ssize_t d, ssize_t s)
+{
+  get_d (d) = acos (get_d (s));
+  set_dtag(d);
+  return d;
+}
 
-// ssize_t
-// atan2Float (ssize_t d, ssize_t y, ssize_t x)
-// {
-//   get_d (d) = atan2 (get_d (y), get_d (x));
-//   set_dtag(d);
-//   return d;
-// }
+ssize_t
+atan2Float (ssize_t d, ssize_t y, ssize_t x)
+{
+  get_d (d) = atan2 (get_d (y), get_d (x));
+  set_dtag(d);
+  return d;
+}
 
-// ssize_t expFloat(ssize_t d, ssize_t s)
-// {
-//   get_d(d) = exp(get_d(s));
-//   set_dtag(d);
-//   return d;
-// }
+ssize_t expFloat(ssize_t d, ssize_t s)
+{
+  get_d(d) = exp(get_d(s));
+  set_dtag(d);
+  return d;
+}
 
-// ssize_t
-// powFloat (ssize_t d, ssize_t x, ssize_t y)
-// {
-//   get_d (d) = pow (get_d (x), get_d (y));
-//   set_dtag(d);
-//   return d;
-// }
+ssize_t
+powFloat (ssize_t d, ssize_t x, ssize_t y)
+{
+  get_d (d) = pow (get_d (x), get_d (y));
+  set_dtag(d);
+  return d;
+}
 
-// ssize_t
-// lnFloat(ssize_t d, ssize_t s)
-// {
-//   get_d(d) = log(get_d(s));
-//   set_dtag(d);
-//   return d;
-// }
+ssize_t
+lnFloat(ssize_t d, ssize_t s)
+{
+  get_d(d) = log(get_d(s));
+  set_dtag(d);
+  return d;
+}
 
-// ssize_t
-// sinhFloat(ssize_t d, ssize_t s)
-// {
-//   get_d(d) = sinh(get_d(s));
-//   set_dtag(d);
-//   return d;
-// }
+ssize_t
+sinhFloat(ssize_t d, ssize_t s)
+{
+  get_d(d) = sinh(get_d(s));
+  set_dtag(d);
+  return d;
+}
 
-// ssize_t
-// coshFloat(ssize_t d, ssize_t s)
-// {
-//   get_d(d) = cosh(get_d(s));
-//   set_dtag(d);
-//   return d;
-// }
+ssize_t
+coshFloat(ssize_t d, ssize_t s)
+{
+  get_d(d) = cosh(get_d(s));
+  set_dtag(d);
+  return d;
+}
 
-// ssize_t
-// tanhFloat(ssize_t d, ssize_t s)
-// {
-//   get_d(d) = tanh(get_d(s));
-//   set_dtag(d);
-//   return d;
-// }
+ssize_t
+tanhFloat(ssize_t d, ssize_t s)
+{
+  get_d(d) = tanh(get_d(s));
+  set_dtag(d);
+  return d;
+}
 
-// ssize_t
-// isnanFloat(ssize_t s)
-// {
-//   if (isnan(get_d(s)))
-//     {
-//       return mlTRUE;
-//     }
-//   return mlFALSE;
-// }
+ssize_t
+isnanFloat(ssize_t s)
+{
+  if (isnan(get_d(s)))
+    {
+      return mlTRUE;
+    }
+  return mlFALSE;
+}
 
-// ssize_t
-// signbitFloat(ssize_t s)
-// {
-//   if (signbit(get_d(s)))
-//     {
-//       return mlTRUE;
-//     }
-//   return mlFALSE;
-// }
+ssize_t
+signbitFloat(ssize_t s)
+{
+  if (signbit(get_d(s)))
+    {
+      return mlTRUE;
+    }
+  return mlFALSE;
+}
 
-// ssize_t
-// isnormalFloat(ssize_t s)
-// {
-//   if (isnormal(get_d(s)))
-//     {
-//       return mlTRUE;
-//     }
-//   return mlFALSE;
-// }
+ssize_t
+isnormalFloat(ssize_t s)
+{
+  if (isnormal(get_d(s)))
+    {
+      return mlTRUE;
+    }
+  return mlFALSE;
+}
 
-// ssize_t
-// copysignFloat (ssize_t d, ssize_t y, ssize_t x)
-// {
-//   get_d (d) = copysign (get_d (y), get_d (x));
-//   set_dtag(d);
-//   return d;
-// }
+ssize_t
+copysignFloat (ssize_t d, ssize_t y, ssize_t x)
+{
+  get_d (d) = copysign (get_d (y), get_d (x));
+  set_dtag(d);
+  return d;
+}
 
-// ssize_t
-// ldexpFloat (ssize_t d, ssize_t x, ssize_t e)
-// {
-//   long int e2 = convertIntToC((long int)e);
-//   get_d (d) = ldexp (get_d (x), e2);
-//   set_dtag(d);
-//   return d;
-// }
+ssize_t
+ldexpFloat (ssize_t d, ssize_t x, ssize_t e)
+{
+  long int e2 = convertIntToC((long int)e);
+  get_d (d) = ldexp (get_d (x), e2);
+  set_dtag(d);
+  return d;
+}
 
-// ssize_t
-// frexpFloat (ssize_t p, ssize_t d, ssize_t x)
-// {
-//   int e = 0;
-//   get_d (d) = frexp (get_d (x), &e);
-//   set_dtag(d);
-//   first(p) = d;
-//   second(p) = convertIntToML((long int)e);
-//   return p;
-// }
+ssize_t
+frexpFloat (ssize_t p, ssize_t d, ssize_t x)
+{
+  int e = 0;
+  get_d (d) = frexp (get_d (x), &e);
+  set_dtag(d);
+  first(p) = d;
+  second(p) = convertIntToML((long int)e);
+  return p;
+}
 
-// ssize_t
-// posInfFloat(ssize_t d)
-// {
-//   get_d(d) = HUGE_VAL;
-//   set_dtag(d);
-//   return d;
-// }
+ssize_t
+posInfFloat(ssize_t d)
+{
+  get_d(d) = HUGE_VAL;
+  set_dtag(d);
+  return d;
+}
 
-// ssize_t
-// negInfFloat(ssize_t d)
-// {
-//   get_d(d) = -HUGE_VAL;
-//   set_dtag(d);
-//   return d;
-// }
+ssize_t
+negInfFloat(ssize_t d)
+{
+  get_d(d) = -HUGE_VAL;
+  set_dtag(d);
+  return d;
+}
 
-// ssize_t
-// maxFiniteFloat(ssize_t d)
-// {
-//   get_d(d) = DBL_MAX;
-//   set_dtag(d);
-//   return d;
-// }
+ssize_t
+maxFiniteFloat(ssize_t d)
+{
+  get_d(d) = DBL_MAX;
+  set_dtag(d);
+  return d;
+}
 
-// ssize_t
-// nextafterFloat (ssize_t d, ssize_t x, ssize_t y)
-// {
-//   get_d (d) = nextafter (get_d (x), get_d (y));
-//   set_dtag(d);
-//   return d;
-// }
+ssize_t
+nextafterFloat (ssize_t d, ssize_t x, ssize_t y)
+{
+  get_d (d) = nextafter (get_d (x), get_d (y));
+  set_dtag(d);
+  return d;
+}
 
-// ssize_t
-// splitFloat (ssize_t p, ssize_t w, ssize_t f, ssize_t r)
-// {
-//   double whole;
-//   get_d (f) = modf (get_d (r), &whole);
-//   get_d (w) = whole;
-//   set_dtag(w);
-//   set_dtag(f);
-//   first(p) = w;
-//   second(p) = f;
-//   return p;
-// }
+ssize_t
+splitFloat (ssize_t p, ssize_t w, ssize_t f, ssize_t r)
+{
+  double whole;
+  get_d (f) = modf (get_d (r), &whole);
+  get_d (w) = whole;
+  set_dtag(w);
+  set_dtag(f);
+  first(p) = w;
+  second(p) = f;
+  return p;
+}
 
-// // IEEE rounding modes
-// // 0:TONEAREST, 1: DOWNWARD, 2: UPWARD, 3: ZERO
-// void
-// floatSetRoundingMode (ssize_t m) {
-//   long int rm = convertIntToC((long int)m);
-//   if ( rm == 0 ) {
-//     fesetround(FE_TONEAREST);
-//   } else if ( rm == 1 ) {
-//     fesetround(FE_DOWNWARD);
-//   } else if ( rm == 2 ) {
-//     fesetround(FE_UPWARD);
-//   } else if ( rm == 3 ) {
-//     fesetround(FE_TOWARDZERO);
-//   } else {
-//     printk("ERROR floatSetRoundingMode: %ld\n", rm);
-//     exit(1);
-//   }
-// }
+// IEEE rounding modes
+// 0:TONEAREST, 1: DOWNWARD, 2: UPWARD, 3: ZERO
+void
+floatSetRoundingMode (ssize_t m) {
+  // long int rm = convertIntToC((long int)m);
+  // if ( rm == 0 ) {
+  //   fesetround(FE_TONEAREST);
+  // } else if ( rm == 1 ) {
+  //   fesetround(FE_DOWNWARD);
+  // } else if ( rm == 2 ) {
+  //   fesetround(FE_UPWARD);
+  // } else if ( rm == 3 ) {
+  //   fesetround(FE_TOWARDZERO);
+  // } else {
+  //   printk("ERROR floatSetRoundingMode: %ld\n", rm);
+  //   // exit(1);
+  // }
+}
 
-// ssize_t
-// floatGetRoundingMode(void) {
-//   long int m = 0;
-//   int rm = fegetround();
-//   if ( rm == FE_TONEAREST ) {
-//     m = 0;
-//   } else if ( rm == FE_DOWNWARD) {
-//     m = 1;
-//   } else if ( rm == FE_UPWARD) {
-//     m = 2;
-//   } else if ( rm == FE_TOWARDZERO) {
-//     m = 3;
-//   } else {
-//     printk("ERROR floatGetRoundingMode: %d\n", rm);
-//     exit(1);
-//   }
-//   return convertIntToML(m);
-// }
+ssize_t
+floatGetRoundingMode(void) {
+  long int m = 0;
+  // int rm = fegetround();
+  // if ( rm == FE_TONEAREST ) {
+  //   m = 0;
+  // } else if ( rm == FE_DOWNWARD) {
+  //   m = 1;
+  // } else if ( rm == FE_UPWARD) {
+  //   m = 2;
+  // } else if ( rm == FE_TOWARDZERO) {
+  //   m = 3;
+  // } else {
+  //   printk("ERROR floatGetRoundingMode: %d\n", rm);
+  //   // exit(1);
+  // }
+  return convertIntToML(m);
+}
 
 // countChar: count the number of times the character `c'
 //     occurs in the string `s'.

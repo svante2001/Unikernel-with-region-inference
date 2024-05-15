@@ -2,7 +2,7 @@
 structure Real : REAL =
   struct
 
-    (* Primitives
+    (* Primitives *)
 
     val radix = 2
     val precision = 53
@@ -356,7 +356,7 @@ structure Real : REAL =
     fun fromLarge _ r = r
 
     fun toDefault i = i
-    fun fromDefault i = i *)
+    fun fromDefault i = i
 
   end (*structure Real*)
 
@@ -366,8 +366,8 @@ structure Real64 : REAL = Real
 (** SigDoc *)
 structure LargeReal : REAL = Real
 
-(* fun real a = Real.fromInt a
+fun real a = Real.fromInt a
 fun floor a = Real.floor a
 fun ceil a = Real.ceil a
 fun trunc a = Real.trunc a
-fun round a = Real.round a *)
+fun round a = Real.round a

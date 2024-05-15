@@ -14,7 +14,7 @@ structure Initial =
     val _ = prim("sml_setFailNumber", (Fail "hat" : exn, 1 : int)) : unit;
 
     (* Real structure *)
-    (* local
+    local
       fun get_posInf () : real = prim ("posInfFloat", ())
       fun get_negInf () : real = prim ("negInfFloat", ())
       fun get_maxFinite () : real = prim("maxFiniteFloat", ())
@@ -33,7 +33,7 @@ structure Initial =
     in
       val ln10 = ln' 10.0
       val NaN = sqrt ~1.0
-    end *)
+    end
 
     (* ByteTable and WordTable functors *)
     val bytetable_maxlen : int = 4 * 1024 * 1024 * 1024  (* 4Gb *)

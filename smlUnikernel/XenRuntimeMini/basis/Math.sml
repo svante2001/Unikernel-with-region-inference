@@ -1,14 +1,14 @@
 
-(* fun (a:real) / (b:real) : real = prim ("divFloat", (a,b)) *)
+fun (a:real) / (b:real) : real = prim ("divFloat", (a,b))
 
 (** SigDoc *)
 structure Math : MATH = struct
   type real = real
 
-  (* fun isNan (x : real) : bool = prim ("isnanFloat", x) *)
+  fun isNan (x : real) : bool = prim ("isnanFloat", x)
 
-  (* val posInf = Initial.posInf
-  val negInf = Initial.negInf *)
+  val posInf = Initial.posInf
+  val negInf = Initial.negInf
 
   fun compare (x, y: real) =
     if x<y then LESS else if x>y then GREATER else EQUAL
@@ -21,7 +21,7 @@ structure Math : MATH = struct
   val pi = 3.14159265358979323846
   val e  = 2.7182818284590452354
 
-  (* fun sqrt (r : real) : real = prim ("sqrtFloat", r)
+  fun sqrt (r : real) : real = prim ("sqrtFloat", r)
   fun sin (r : real) : real = prim ("sinFloat", r)
   fun cos (r : real) : real = prim ("cosFloat", r)
   fun tan r = sin r / cos r
@@ -48,6 +48,6 @@ structure Math : MATH = struct
   end
   fun sinh (a : real) : real = prim ("sinhFloat", a)
   fun cosh (a : real) : real = prim ("coshFloat", a)
-  fun tanh (a : real) : real = prim ("tanhFloat", a) *)
+  fun tanh (a : real) : real = prim ("tanhFloat", a)
 
 end

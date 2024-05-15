@@ -20,7 +20,7 @@ signature MATH =
     type real
     val pi    : real
     val e     : real
-    (* val sqrt  : real -> real
+    val sqrt  : real -> real
     val sin   : real -> real
     val cos   : real -> real
     val tan   : real -> real
@@ -34,7 +34,7 @@ signature MATH =
     val log10 : real -> real
     val sinh  : real -> real
     val cosh  : real -> real
-    val tanh  : real -> real *)
+    val tanh  : real -> real
   end
 
 (**

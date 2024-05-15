@@ -1,8 +1,8 @@
 # Makefile for the MLKit runtime system.
 
 SYSNAME=$(shell uname -s)
-CC=gcc -fno-builtin -Wall -Werror -Wredundant-decls -Wno-format -Wno-redundant-decls -Wformat -fno-stack-protector -fgnu89-inline -Wstrict-prototypes -Wnested-externs -Wpointer-arith -Winline -g -D__INSIDE_MINIOS__ -m64 -mno-red-zone -fno-reorder-blocks -fno-asynchronous-unwind-tables -DCONFIG_START_NETWORK -DCONFIG_SPARSE_BSS -DCONFIG_BLKFRONT -DCONFIG_NETFRONT -DCONFIG_FBFRONT -DCONFIG_KBDFRONT -DCONFIG_CONSFRONT -DCONFIG_XENBUS -DCONFIG_PARAVIRT -DCONFIG_LIBXS -D__XEN_INTERFACE_VERSION__=0x00030205 -isystem /home/axel/Projects/miniOS/mini-os/include -D__MINIOS__  -isystem /home/axel/Projects/miniOS/mini-os/include/x86 -isystem /home/axel/Projects/miniOS/mini-os/include/x86/x86_64
-CFLAGS=-g -O2
+CC=gcc -fno-builtin -Wall -Werror -Wredundant-decls -Wno-format -Wno-redundant-decls -Wformat -fno-stack-protector -fgnu89-inline -Wstrict-prototypes -Wnested-externs -Wpointer-arith -Winline -g -D__INSIDE_MINIOS__ -m64 -mno-red-zone -fno-reorder-blocks -fno-asynchronous-unwind-tables -DCONFIG_START_NETWORK -DCONFIG_SPARSE_BSS -DCONFIG_BLKFRONT -DCONFIG_NETFRONT -DCONFIG_FBFRONT -DCONFIG_KBDFRONT -DCONFIG_CONSFRONT -DCONFIG_XENBUS -DCONFIG_PARAVIRT -DCONFIG_LIBXS -D__XEN_INTERFACE_VERSION__=0x00030205 -isystem $(shell pwd)/../../include -D__MINIOS__  -isystem $(shell pwd)/../../include/x86 -isystem $(shell pwd)/../../include/x86/x86_64 -isystem $(shell pwd)/include
+CFLAGS=-g -O2 -fno-builtin -Wall -Werror -Wredundant-decls -Wno-format -Wno-redundant-decls -Wformat -fno-stack-protector -fgnu89-inline -Wstrict-prototypes -Wnested-externs -Wpointer-arith -Winline -g -D__INSIDE_MINIOS__ -m64 -mno-red-zone -fno-reorder-blocks -fno-asynchronous-unwind-tables
 INSTALL=/usr/bin/install -c
 INSTALLDATA=${INSTALL} -m 644
 INSTALLPROGRAM=${INSTALL}
@@ -29,7 +29,7 @@ all: runtimeSystem.a
 	$(CC) -c $(OPT) -o $*.o $<
 
 runtimeSystem.a: $(OFILES) Makefile
-	$(AR) $@ $(OFILES)
+	$(AR) $@ $(OFILES) libm.a
 	$(INSTALLDATA)  $@ $(LIBDIR)
 
 depend:
