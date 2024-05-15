@@ -1,0 +1,1 @@
+nm -an basis/MLB/RI/*.o > allSymbols.txt
