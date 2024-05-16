@@ -19,7 +19,7 @@ setup:
 	sudo modprobe tun
 	sudo tunctl -u $$USER -t tap0
 	sudo ifconfig tap0 10.0.0.1 up
-	(cd UnixRuntimeMini; make)arith
+	(cd UnixRuntimeMini; make)
 
 echo: $(t)
 	SML_LIB=$(SL) mlkit $(FLAGS) -no_gc -o echo.exe -libdirs "." -libs "m,c,dl,tuntaplib" $(shell pwd)/echo/main.mlb
