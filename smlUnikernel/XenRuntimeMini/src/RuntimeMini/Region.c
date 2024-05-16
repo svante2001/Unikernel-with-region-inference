@@ -114,7 +114,7 @@ uintptr_t *
 alloc_new_page(Gen *gen)
 {
   Rp* np;
-  debug(printf("[alloc_new_page: gen: %p", gen);)
+  // printk("alloc_new_page called\n");
 
   MAYBE_DEFINE_CONTEXT;
 
@@ -130,13 +130,16 @@ alloc_new_page(Gen *gen)
   np->n = NULL;
   np->gen = gen;         // Install origin-pointer to generation - used by GC
 
-  if ( clear_fp(gen->fp) )
-    last_rp_of_gen(gen)->n = np; // Updates the next field in the last region page.
-  else {
+
+  if ( clear_fp(gen->fp) ) {
+
+    last_rp_of_gen(gen)->n = np; // Updates the next field in the last region page
+    // printk("Done with last_rp_of_gen\n");
+  } else {
+    // printk("Update pointer to first page\n");
     gen->fp = np;                /* Update pointer to the first page. */
   }
-
-  debug(printf("]\n");)
+  // printk("Returning alloc newpage");
   return (uintptr_t *) (&(np->i));    /* Return the allocation pointer. */
 }
 
@@ -283,9 +286,6 @@ allocGen (
   uintptr_t *t3;
   Region r;
 
-  debug(printf("[allocGen... generation: %p, n:%zu ", gen,n));
-  debug(fflush(stdout));
-
   // see if the size of requested memory exceeds
   // the size of a region page
 
@@ -301,21 +301,23 @@ allocGen (
 
   t1 = gen->a;
   t2 = t1 + n;
+
   t3 = rpBoundary(t1);
+
   if (t2 > t3) {
+
     gen->a = alloc_new_page(gen);
     t1 = gen->a;
     t2 = t1+n;
   }
-  gen->a = t2;
 
-  debug(printf(", t1=%p, t2=%p]\n", t1,t2));
-  debug(fflush(stdout));
+  gen->a = t2;
 
   return t1;
 }
 
 uintptr_t *alloc (Region r, size_t n) {
+
   r = clearStatusBits(r);
   return allocGen(
 		  &(r->g0), n

@@ -31,13 +31,13 @@ die2 (const char *s1, const char* s2)
 
 // static struct rlimit limit;
 typedef unsigned long rlim_t;
-// struct rlimit
-//   {
-//     /* The current (soft) limit.  */
-//     rlim_t rlim_cur;
-//     /* The hard limit.  */
-//     rlim_t rlim_max;
-//   };
+struct rlimit
+  {
+    /* The current (soft) limit.  */
+    rlim_t rlim_cur;
+    /* The hard limit.  */
+    rlim_t rlim_max;
+  };
   
 #define SIZE_MAX 18446744073709551615UL
 #define RLIMIT_STACK 3
@@ -53,29 +53,29 @@ void
 setStackSize(rlim_t size)
 {
   // int res;
-  // //char *bad;
-  // // struct rlimit lim;
-  // // struct rlimit oldlim;
-  // // res = getrlimit(RLIMIT_STACK, &oldlim);
+  // char *bad = "Bad";
+  // struct rlimit lim;
+  // struct rlimit oldlim;
+  // res = getrlimit(RLIMIT_STACK, &oldlim);
   // if (res == -1)
   // {
   //   // bad = strerror(errno);
-  //   // die2("setStackSize(1)", bad);
+  //   die2("setStackSize(1)", bad);
   // }
-  // // lim.rlim_cur = oldlim.rlim_max;
-  // // lim.rlim_max = oldlim.rlim_max;
-  // // res = setrlimit(RLIMIT_STACK, &lim);
+  // lim.rlim_cur = oldlim.rlim_max;
+  // lim.rlim_max = oldlim.rlim_max;
+  // res = setrlimit(RLIMIT_STACK, &lim);
   // if (res == -1)
   // {
   //   return;  // return silently in case of an error; on
   //            // macOS, the call fails, but the stack should already be
   //            // big in size (set during linking)
   // }
-  // // res = getrlimit(RLIMIT_STACK, &limit);
+  // res = getrlimit(RLIMIT_STACK, &limit);
   // if (res == -1)
   // {
   //   // bad = strerror(errno);
-  //   // die2("setStackSize(3)", bad);
+  //   die2("setStackSize(3)", bad);
   // }
   return;
 }
@@ -125,9 +125,10 @@ int uncaught_exn_raised = 0;
 void
 uncaught_exception (Context ctx, String exnStr, unsigned long n, uintptr_t ep)
 {
+  printk("uncaught exception1\n");
   uintptr_t a;
   ctx->uncaught_exnname = convertIntToC(n);
-  printk("uncaught exception ");
+  printk("uncaught exception2\n");
   
   // fputs(exnStr->data, stderr);
   
@@ -172,10 +173,9 @@ main(int argc, char *argv[])
   ctx->exnptr = NULL;
   top_ctx = ctx;
 
-  debug(printf("Starting execution...\n");)
-  printk("The Runtime says hello! pls run\n");
+
   code(ctx);
-  printk("Done running code");
+
   return -1;   /* never comes here (i.e., exits through
                             * terminateML or uncaught_exception) */
 }

@@ -21,12 +21,18 @@
 static inline String
 REG_POLY_FUN_HDR(allocString, Region rAddr, size_t size)
 {
+  // printk("alloc string\n");
   String sd;
   size_t szAlloc;                // size of string in words + tag
   size_t size0 = size + 1;       // size with space for '\0'
+  // printk("Calcing szalloc\n");
   szAlloc = 1 + ((size0 % (sizeof(void *))) ? (size0 / (sizeof(void *)))+1 : (size0 / (sizeof(void *))));  // 1 is for the tag
+  // printk("Calling alloc\n");
   sd = (String) alloc(rAddr, szAlloc);
+
+
   sd->size = val_tag_string(size);
+
   return sd;
 }
 
@@ -39,6 +45,7 @@ convertStringToC(Context ctx, String mlStr, char *buf, size_t buflen, uintptr_t 
   sz = sizeStringDefine(mlStr);
   if ( sz > buflen-1)
     {
+      printk("ERROR in convertStringToC!\n");
       // raise_exn(ctx,exn);
     }
   for ( p = mlStr->data; *p != '\0'; )
@@ -112,8 +119,10 @@ REG_POLY_FUN_HDR(allocStringML, Region rAddr, size_t sizeML)
 String
 REG_POLY_FUN_HDR(allocStringC, Region rAddr, size_t sizeC)
 {
+
   String strPtr;
   strPtr = REG_POLY_CALL(allocString, rAddr, sizeC);
+
   return strPtr;
 }
 

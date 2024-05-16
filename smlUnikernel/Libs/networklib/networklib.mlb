@@ -4,7 +4,7 @@ $(SML_LIB)/basis/basis.mlb
 ../udplib/udplib.mlb
 ../bytelib/bytelib.mlb
 ../ethlib/ethlib.mlb
-../netif-tuntaplib/netif-tuntaplib.mlb
+../netiflib/netiflib.mlb
 ../utilslib/utilslib.mlb
 
 networklib.sml
