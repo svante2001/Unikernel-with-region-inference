@@ -27,6 +27,9 @@ echo: $(t)
 facfib: $(t)
 	SML_LIB=$(SL) mlkit $(FLAGS) -no_gc -o facfib.exe -libdirs "." -libs "m,c,dl,tuntaplib" $(shell pwd)/facfib/main.mlb
 
+monteCarlo: $(t)
+	SML_LIB=$(SL) mlkit $(FLAGS) -no_gc -o monteCarlo.exe -libdirs "." -libs "m,c,dl,tuntaplib" $(shell pwd)/monteCarlo/main.mlb
+
 unix:
 	(cd UnixRuntimeMini; make)
 	gcc -I $(MLKIT_SOURCE_RUNTIME) -o libtuntaplib.a -c Libs/netiflib/netif-tuntap.c
