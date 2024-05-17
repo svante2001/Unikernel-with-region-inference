@@ -85,7 +85,7 @@ fun ethSend et dstMac payload =
                 dstMac = dstMac,
                 srcMac = mac
             }) payload
-    in  intToRawbyteString (ethTypeToInt et) 4 ^
+    in  
         ethHeader
         |> toByteList
         |> write_tap
@@ -198,9 +198,9 @@ fun handleIPv4 (Header_Eth ethHeader) ethFrame =
     end
 
 fun listen () = 
-    let 
+    (let 
         val rawTap = read_tap () 
-        val ethFrame = String.extract (rawTap, 4, NONE)
+        val ethFrame = String.extract (rawTap, 0, NONE)
         val (ethHeader, ethPayload) = ethFrame |> decodeEthFrame 
         val Header_Eth {et, dstMac, srcMac} = ethHeader
     in
@@ -210,4 +210,4 @@ fun listen () =
             | _ => print "listen: protocol not supported\n"
         );
         listen ()
-    end
+    end) handle _ => (print "Encountered error in handling!\n"; listen ())

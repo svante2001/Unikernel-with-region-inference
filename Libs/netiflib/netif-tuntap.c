@@ -134,18 +134,24 @@ char* read_tap(int addr, Region str_r, Context ctx) {
     // Null-terminate the buffer
     buf[bytes_read] = '\0';
 
-    return my_convertStringToML(str_r, buf, bytes_read);
+    return my_convertStringToML(str_r, buf+4, bytes_read-4); // For some reason we get 4 extra bytes we do not use
 }
 
 void write_tap(uintptr_t byte_list) {
     char toWrite_buf[1518];
     size_t toWrite_len = 1518;
 
+    toWrite_buf[0] = toWrite_buf[1] = 0;
+
     uintptr_t ys;
-    int i = 0;
-    for (ys = byte_list; isCONS(ys); ys=tl(ys)) {
+    int i = 4;
+    for (ys = byte_list; isCONS(ys) && i <= 1518; ys=tl(ys)) {
         toWrite_buf[i++] = convertIntToC(hd(ys));
     }
+
+    // Copying ethtype bytes to start of buffer
+    toWrite_buf[2] = toWrite_buf[13];
+    toWrite_buf[3] = toWrite_buf[14];
 
     ssize_t bytes_written = write(tapfd, toWrite_buf, i);
 }
