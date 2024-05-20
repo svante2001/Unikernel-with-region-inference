@@ -49,4 +49,6 @@ clean:
 	-rm -rf Libs/*lib/MLB MLB
 	-rm -rf facfib/MLB
 	-rm -rf echo/MLB
+	-rm -rf monteCarlo/MLB
+	-rm -rf sort/MLB
 	-rm *.exe
