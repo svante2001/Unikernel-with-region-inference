@@ -115,7 +115,7 @@ String REG_POLY_FUN_HDR(my_convertStringToML, Region rAddr, const char *cStr, in
 }
 
 int tapfd = -1;
-char* read_tap(int addr, Region str_r, Context ctx) {
+String read_tap(int addr, Region str_r, Context ctx) {
     char tap_name[IFNAMSIZ];
 
     strcpy(tap_name, "tap0");

@@ -1,2 +1,5 @@
-$(SML_LIB)/basis/basis.mlb
-utilslib.sml
+local 
+    $(SML_LIB)/basis/basis.mlb
+in 
+    utilslib.sml 
+end 

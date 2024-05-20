@@ -1,4 +1,6 @@
-$(SML_LIB)/basis/basis.mlb
-../bytelib/bytelib.mlb
-../utilslib/utilslib.mlb
-udplib.sml
+local $(SML_LIB)/basis/basis.mlb
+    ../utilslib/utilslib.mlb
+in
+    UDPLIB.sig
+    udplib.sml
+end

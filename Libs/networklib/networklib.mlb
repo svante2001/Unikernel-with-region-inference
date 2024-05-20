@@ -1,10 +1,11 @@
-$(SML_LIB)/basis/basis.mlb
+local $(SML_LIB)/basis/basis.mlb
+../utilslib/utilslib.mlb
 ../arplib/arplib.mlb
 ../iplib/iplib.mlb
 ../udplib/udplib.mlb
 ../bytelib/bytelib.mlb
 ../ethlib/ethlib.mlb
 ../netiflib/netiflib.mlb
-../utilslib/utilslib.mlb
-
-networklib.sml
+in 
+    NETWORKLIB.sig networklib.sml
+end

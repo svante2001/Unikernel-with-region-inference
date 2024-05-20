@@ -1,14 +1,7 @@
-fun read_fd(file : string) : string =
-  prim ("read_fd", file)
+structure Netif : NETIFLIB = struct 
+  fun readTap() : string =
+    prim ("read_tap", ())
 
-fun write_fd(file : string, message : string) : int =
-  prim ("write_fd", (file, message))
-
-fun open_tap() : unit =
-  prim ("open_tap", ())
-
-fun read_tap() : string =
-  prim ("read_tap", ())
-
-fun write_tap(byte_list : int list) : unit =
-  prim ("write_tap", byte_list)
+  fun writeTap(byte_list : int list) : unit =
+    prim ("write_tap", byte_list)
+end 

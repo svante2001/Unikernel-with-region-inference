@@ -1,2 +1,5 @@
-$(SML_LIB)/basis/basis.mlb
-netiflib.sml
+local 
+    $(SML_LIB)/basis/basis.mlb
+in
+    NETIFLIB.sig netiflib.sml
+end 

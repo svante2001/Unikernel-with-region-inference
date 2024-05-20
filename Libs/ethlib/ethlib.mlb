@@ -1,4 +1,6 @@
+local
 $(SML_LIB)/basis/basis.mlb
-../bytelib/bytelib.mlb
 ../utilslib/utilslib.mlb
-ethlib.sml
+in 
+    ETHLIB.sig ethlib.sml
+end

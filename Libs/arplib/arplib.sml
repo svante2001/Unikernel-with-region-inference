@@ -1,65 +1,69 @@
-datatype ARP_OP = Request | Reply
+structure Arp : ARPLIB = struct 
 
-datatype header_ARP = Header_ARP of {
-    htype : int, 
-    ptype : int, 
-    hlen : int, 
-    plen : int, 
-    oper : ARP_OP, 
-    sha : int list, 
-    spa : int list, 
-    tha : int list, 
-    tpa : int list 
-}
+    datatype ARP_OP = Request | Reply
 
-fun toArpOperation i =
-    (case i of 
-      1 => Request
-    | 2 => Reply
-    | _ => raise Fail "Could not determine arp operation")
-
-fun arpOperationToString arp =
-    (case arp of
-      Request => "Request"
-    | Reply => "Reply")
-
-fun decodeArp s =
-    Header_ARP {   
-        htype = String.substring (s, 0, 2) |> convertRawBytes,
-        ptype = String.substring (s, 2, 2) |> convertRawBytes,
-        hlen = String.substring (s, 4, 1) |> convertRawBytes,
-        plen = String.substring (s, 5, 1) |> convertRawBytes,
-        oper = String.substring (s, 6, 2) |> convertRawBytes |> toArpOperation,
-        sha = String.substring (s, 8, 6) |> toByteList,
-        spa = String.substring (s, 14, 4) |> toByteList, 
-        tha = String.substring (s, 18, 6) |> toByteList,
-        tpa = String.substring (s, 24, 4) |> toByteList 
+    datatype HeaderARP = HeaderARP of {
+        htype : int, 
+        ptype : int, 
+        hlen : int, 
+        plen : int, 
+        oper : ARP_OP, 
+        sha : int list, 
+        spa : int list, 
+        tha : int list, 
+        tpa : int list 
     }
 
-fun printArp (Header_ARP { htype, ptype, hlen, plen, oper, sha, spa, tha, tpa }) =
-    "\n-- ARP-packet --\n" ^
-    "Hardware type: " ^ Int.toString htype ^ "\n" ^
-    "Protocol type: " ^ Int.toString ptype ^ "\n" ^
-    "Hardware address length: " ^ Int.toString hlen ^ "\n" ^
-    "Protocol address length: " ^ Int.toString plen ^ "\n" ^
-    "Operation: " ^ arpOperationToString oper ^ "\n" ^
-    "Sender hardware address: [" ^ rawBytesString sha ^ "]\n" ^
-    "Sender protocol address: [" ^ rawBytesString spa ^ "]\n" ^
-    "Target hardware adress: [" ^ rawBytesString tha ^ "]\n" ^
-    "Target protocol address: [" ^ rawBytesString tpa ^ "]\n\n" 
-    |> print
+    fun toArpOperation i =
+        (case i of 
+        1 => Request
+        | 2 => Reply
+        | _ => raise Fail "Could not determine arp operation")
 
-(* For some reason 'case of' cannot be used here??*)
-fun arpOperationToInt Request = 1
-  | arpOperationToInt Reply = 2 
+    fun arpOperationToString arp =
+        (case arp of
+        Request => "Request"
+        | Reply => "Reply")
 
-fun encodeArp (Header_ARP { htype, ptype, hlen, plen, oper, sha, spa, tha, tpa }) =
-    (intToRawbyteString htype 2) ^
-    (intToRawbyteString ptype 2) ^
-    (intToRawbyteString hlen 1) ^
-    (intToRawbyteString plen 1) ^
-    (intToRawbyteString 2 2) ^
-    byteListToString sha ^
-    byteListToString spa ^
-    byteListToString tha ^
-    byteListToString tpa
+    (* For some reason 'case of' cannot be used here??*)
+    fun arpOperationToInt Request = 1
+    | arpOperationToInt Reply = 2 
+
+    fun printArp (HeaderARP { htype, ptype, hlen, plen, oper, sha, spa, tha, tpa }) =
+        "\n-- ARP-packet --\n" ^
+        "Hardware type: " ^ Int.toString htype ^ "\n" ^
+        "Protocol type: " ^ Int.toString ptype ^ "\n" ^
+        "Hardware address length: " ^ Int.toString hlen ^ "\n" ^
+        "Protocol address length: " ^ Int.toString plen ^ "\n" ^
+        "Operation: " ^ arpOperationToString oper ^ "\n" ^
+        "Sender hardware address: [" ^ rawBytesString sha ^ "]\n" ^
+        "Sender protocol address: [" ^ rawBytesString spa ^ "]\n" ^
+        "Target hardware adress: [" ^ rawBytesString tha ^ "]\n" ^
+        "Target protocol address: [" ^ rawBytesString tpa ^ "]\n\n" 
+        |> print
+
+    fun encodeArp (HeaderARP { htype, ptype, hlen, plen, oper, sha, spa, tha, tpa }) =
+        (intToRawbyteString htype 2) ^
+        (intToRawbyteString ptype 2) ^
+        (intToRawbyteString hlen 1) ^
+        (intToRawbyteString plen 1) ^
+        (intToRawbyteString 2 2) ^
+        byteListToString sha ^
+        byteListToString spa ^
+        byteListToString tha ^
+        byteListToString tpa
+    
+    fun decodeArp s =
+        HeaderARP {   
+            htype = String.substring (s, 0, 2) |> convertRawBytes,
+            ptype = String.substring (s, 2, 2) |> convertRawBytes,
+            hlen = String.substring (s, 4, 1) |> convertRawBytes,
+            plen = String.substring (s, 5, 1) |> convertRawBytes,
+            oper = String.substring (s, 6, 2) |> convertRawBytes |> toArpOperation,
+            sha = String.substring (s, 8, 6) |> toByteList,
+            spa = String.substring (s, 14, 4) |> toByteList, 
+            tha = String.substring (s, 18, 6) |> toByteList,
+            tpa = String.substring (s, 24, 4) |> toByteList 
+        }
+end 
+
