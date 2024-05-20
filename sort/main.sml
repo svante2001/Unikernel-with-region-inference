@@ -1,3 +1,5 @@
+open Network 
+
 fun intListToString l =
     let
         val strL = map (Int.toString) l
@@ -32,7 +34,7 @@ fun mergesort [] = []
 
 val _ = (
     bindUDP 8080 (
-        fn data => data |> stringToIntList |> mergesort |> intListToString
+        fn data => data |> stringToIntList |> mergesort |> intListToString 
     );
     listen ()
 )

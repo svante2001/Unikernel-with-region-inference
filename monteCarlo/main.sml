@@ -1,3 +1,5 @@
+open Network
+
 val digits = ref 10000.0
 
 (* https://en.wikipedia.org/wiki/Lehmer_random_number_generator *)

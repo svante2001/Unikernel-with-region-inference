@@ -1,3 +1,5 @@
+open Network
+
 val facTbl = ref (Vector.fromList [])
 
 fun fac n : IntInf.int = (
