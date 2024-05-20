@@ -17,6 +17,7 @@ int
 die (const char *s)
 {
   printk("Runtime Error: %s\n",s);
+  while(1);
   return -1;
   // exit(-1)
 }
@@ -25,6 +26,7 @@ int
 die2 (const char *s1, const char* s2)
 {
   printk("Runtime Error: %s\n%s\n",s1,s2);
+  while(1);
   return -1;
   // exit(-1)
 }
@@ -136,6 +138,7 @@ uncaught_exception (Context ctx, String exnStr, unsigned long n, uintptr_t ep)
   {
     a = second (ep);
     // fputs(" ", stderr);
+    printk("%s", ((String) a)->data);
     // fputs(((String) a)->data,stderr);
     
   }
@@ -143,11 +146,13 @@ uncaught_exception (Context ctx, String exnStr, unsigned long n, uintptr_t ep)
   {
     a = second(ep);
     a = first(a);
+     printk("%s", ((String) a)->data);
     // fputs(" ", stderr);
     // fputs(((String) a)->data,stderr);
     
   }
   printk( "\n");
+  while(1);
   
   return;
 }
@@ -159,7 +164,7 @@ Context top_ctx;   // only for REPL
 int
 main(int argc, char *argv[])
 {
-  printk("Running in runtime!\n");
+  printk("Running in runtime2!\n");
   if ((((double)Max_Int) != Max_Int_d) || (((double)Min_Int) != Min_Int_d))
     die("main - integer configuration is erroneous");
 
@@ -175,6 +180,9 @@ main(int argc, char *argv[])
 
 
   code(ctx);
+
+  printk("Code done running!\n");
+  while(1);
 
   return -1;   /* never comes here (i.e., exits through
                             * terminateML or uncaught_exception) */

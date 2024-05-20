@@ -34,7 +34,8 @@ val _ = (
     bindUDP 8080 (
         fn data => 
             let val n = data |> Int.fromString |> valOf
-            in  monteCarlo n |> Real.toString
+            in  print "monte carlo running\n";
+                monteCarlo n |> Real.toString
             end
     );
     listen ()

@@ -42,16 +42,20 @@ String REG_POLY_FUN_HDR(my_convertStringToML, Region rAddr, const char *cStr, in
 static struct netfront_dev *net_dev = NULL;
 static struct semaphore net_sem = __SEMAPHORE_INITIALIZER(net_sem, 0);
 
+#define QUEUE_SIZE 1000
+
+unsigned char * dataPtrs[QUEUE_SIZE];
+int dataLengths[QUEUE_SIZE];
+
+int writePos = 1;
+int readPos = 0;
+
 static void netfront_thread(void *p) {
     net_dev = init_netfront(NULL, NULL, NULL, NULL);
     up(&net_sem);
 }
 
 int extern main(int argc, char ** argv);
-
-unsigned char * gdata = NULL;
-
-int glen = 0;
 
 static void sml_thread(void *p) {
     down(&net_sem);
@@ -63,9 +67,10 @@ static void sml_thread(void *p) {
 
 
 void netif_rx(unsigned char* data, int len, void *arg) {
-    printk("Received data with length: %d\n", len);
-    gdata = data;
-    glen = len;
+    int newWritePos = (writePos + 1) % QUEUE_SIZE;
+    dataPtrs[writePos] = data;
+    dataLengths[writePos] = len;
+    writePos = newWritePos;
 }
 
 int app_main(void *p) {
@@ -74,28 +79,20 @@ int app_main(void *p) {
     return 0;
 }
 
-char * read_tap(int addr, Region str_r, Context ctx) {
-    while (gdata == NULL);
+String readTap(int addr, Region str_r, Context ctx) {
+    int newReadPos = (readPos + 1) % QUEUE_SIZE;
+    while (newReadPos == writePos);
 
-    char buf[1518];
+    readPos = newReadPos;
 
-    int i;
-    for (i = 0; i < glen; i++) {
-        buf[i] = gdata[i];
-    }
-
-    // Null-terminate the buffer
-    buf[i] = '\0';
-
-    // printk("after null char add\n");
-
-    gdata = NULL;
-    glen = 0;
-
-    return my_convertStringToML(str_r, buf, i);
+    unsigned char * pktptr = dataPtrs[newReadPos];
+    int pktlen = dataLengths[newReadPos];
+    
+    return my_convertStringToML(str_r, (char *)pktptr, pktlen);;
 }
 
-void write_tap(uintptr_t byte_list) {
+void writeTap(uintptr_t byte_list) {
+    down(&net_sem);
     unsigned char toWrite_buf[1518];
 
     uintptr_t ys;
@@ -103,7 +100,7 @@ void write_tap(uintptr_t byte_list) {
     for (ys = byte_list; isCONS(ys); ys=tl(ys)) {
         toWrite_buf[i++] = convertIntToC(hd(ys));
     }
-    
+
     netfront_xmit(net_dev, toWrite_buf, i);
-    printk("Sent %d bytes back\n", i);
+    up(&net_sem);
 }
