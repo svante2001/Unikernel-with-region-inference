@@ -1,7 +1,7 @@
-signature ETHLIB = sig 
+signature ETH = sig 
     datatype ethType = ARP | IPv4 | IPv6 
 
-    datatype headerEth = HeaderEth of { 
+    datatype header = Header of { 
         et : ethType, 
         dstMac : int list, 
         srcMac : int list
@@ -11,7 +11,7 @@ signature ETHLIB = sig
     val ethTypeToInt : ethType -> int 
     val ethTypeToString : ethType -> string
 
-    val printEthFrame : headerEth -> unit 
-    val decodeEthFrame : string -> headerEth * string
-    val encodeEthFrame : headerEth -> string -> string
+    val printHeader : header -> unit 
+    val decode : string -> header * string
+    val encode : header -> string -> string
 end 

@@ -1,7 +1,7 @@
-structure Ip : IPLIB = struct 
+structure IPv4 : IPV4 = struct 
     datatype protocol = ICMP | TCP | UDP | UNKNOWN
 
-    datatype headerIPv4 = HeaderIPv4 of {
+    datatype header = Header of {
         version : int,
         ihl : int,
         dscp : int,
@@ -55,10 +55,10 @@ structure Ip : IPLIB = struct
         | UDP => "UDP"
         | _ => "Uknown protocol"
 
-    fun isFragmented (HeaderIPv4 r) = if (#flags r) = 1 then true else false
+    fun isFragmented (Header r) = if (#flags r) = 1 then true else false
 
     fun verifyChecksumIPv4 header payload =
-        let val (HeaderIPv4 {
+        let val (Header {
                 version,
                 ihl,
                 dscp,
@@ -90,7 +90,7 @@ structure Ip : IPLIB = struct
         end
 
     (* TODO: Does not handle options, ignores ihl *)
-    fun decodeIPv4 s = (HeaderIPv4 {
+    fun decode s = (Header {
         version = getLBits (String.substring (s, 0, 1) |> convertRawBytes) 4,
         ihl = getRBits (String.substring (s, 0, 1) |> convertRawBytes) 4,
         dscp = getLBits (String.substring (s, 1, 1) |> convertRawBytes) 6, 
@@ -106,7 +106,7 @@ structure Ip : IPLIB = struct
         dest_addr = String.substring (s, 16, 4) |> toByteList
     }, String.extract (s, 20, NONE))
 
-    fun printIPv4 (HeaderIPv4 {
+    fun printHeader (Header {
         version,
         ihl,
         dscp,
@@ -137,7 +137,7 @@ structure Ip : IPLIB = struct
         "DST-ADDRESS: " ^ rawBytesString dest_addr  ^ "\n"
         |> print
 
-    fun encodeIPv4 (HeaderIPv4 {
+    fun encode (Header {
         version,
         ihl,
         dscp,

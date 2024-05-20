@@ -1,4 +1,4 @@
-structure Netif : NETIFLIB = struct 
+structure Netif : NETIF = struct 
   fun readTap() : string =
     prim ("read_tap", ())
 

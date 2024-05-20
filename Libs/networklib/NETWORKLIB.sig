@@ -3,7 +3,7 @@
     function to start the infinite listen. 
 *)
 
-signature NETWORKLIB = sig
+signature NETWORK = sig
     val bindUDP : int -> (string -> string) -> unit
     val listen : unit -> unit
 end

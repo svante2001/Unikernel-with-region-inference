@@ -2,5 +2,5 @@ local
     $(SML_LIB)/basis/basis.mlb
     ../utilslib/utilslib.mlb
 in 
-    IPLIB.sig iplib.sml
+    IPV4LIB.sig ipv4lib.sml
 end 

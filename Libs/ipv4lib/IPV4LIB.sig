@@ -1,7 +1,7 @@
-signature IPLIB = sig 
+signature IPV4 = sig 
     datatype protocol = ICMP | TCP | UDP | UNKNOWN
 
-    datatype headerIPv4 = HeaderIPv4 of {
+    datatype header = Header of {
         version : int,
         ihl : int,
         dscp : int,
@@ -21,9 +21,9 @@ signature IPLIB = sig
     val protToInt : protocol -> int
     val protToString : protocol -> string 
 
-    val isFragmented : headerIPv4 -> bool
+    val isFragmented : header -> bool
 
-    val printIPv4 : headerIPv4 -> unit
-    val decodeIPv4 : string -> headerIPv4 * string
-    val encodeIPv4 : headerIPv4 -> string -> string
+    val printHeader : header -> unit
+    val decode : string -> header * string
+    val encode : header -> string -> string
 end 

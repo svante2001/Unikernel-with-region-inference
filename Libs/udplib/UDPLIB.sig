@@ -3,16 +3,16 @@
 *)
 
 signature UDPLIB = sig
-    datatype headerUDP = HeaderUDP of {
+    datatype header = Header of {
         source_port: int,
         dest_port: int,
         length : int,
         checksum: int
     } 
 
-    val printUDPHeader : headerUDP -> unit
-    val decodeUDP : string -> headerUDP * string
-    val encodeUDP : headerUDP -> string -> string
+    val printHeader : header -> unit
+    val decode : string -> header * string
+    val encode : header -> string -> string
 end
 
 (*

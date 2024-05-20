@@ -1,8 +1,8 @@
-structure Arp : ARPLIB = struct 
+structure ARP : ARPLIB = struct 
 
     datatype ARP_OP = Request | Reply
 
-    datatype HeaderARP = HeaderARP of {
+    datatype header = Header of {
         htype : int, 
         ptype : int, 
         hlen : int, 
@@ -16,20 +16,20 @@ structure Arp : ARPLIB = struct
 
     fun toArpOperation i =
         (case i of 
-        1 => Request
+          1 => Request
         | 2 => Reply
         | _ => raise Fail "Could not determine arp operation")
 
     fun arpOperationToString arp =
         (case arp of
-        Request => "Request"
+          Request => "Request"
         | Reply => "Reply")
 
     (* For some reason 'case of' cannot be used here??*)
     fun arpOperationToInt Request = 1
     | arpOperationToInt Reply = 2 
 
-    fun printArp (HeaderARP { htype, ptype, hlen, plen, oper, sha, spa, tha, tpa }) =
+    fun printHeader (Header { htype, ptype, hlen, plen, oper, sha, spa, tha, tpa }) =
         "\n-- ARP-packet --\n" ^
         "Hardware type: " ^ Int.toString htype ^ "\n" ^
         "Protocol type: " ^ Int.toString ptype ^ "\n" ^
@@ -42,7 +42,7 @@ structure Arp : ARPLIB = struct
         "Target protocol address: [" ^ rawBytesString tpa ^ "]\n\n" 
         |> print
 
-    fun encodeArp (HeaderARP { htype, ptype, hlen, plen, oper, sha, spa, tha, tpa }) =
+    fun encode (Header { htype, ptype, hlen, plen, oper, sha, spa, tha, tpa }) =
         (intToRawbyteString htype 2) ^
         (intToRawbyteString ptype 2) ^
         (intToRawbyteString hlen 1) ^
@@ -53,8 +53,8 @@ structure Arp : ARPLIB = struct
         byteListToString tha ^
         byteListToString tpa
     
-    fun decodeArp s =
-        HeaderARP {   
+    fun decode s =
+        Header {   
             htype = String.substring (s, 0, 2) |> convertRawBytes,
             ptype = String.substring (s, 2, 2) |> convertRawBytes,
             hlen = String.substring (s, 4, 1) |> convertRawBytes,
