@@ -13,7 +13,7 @@ structure UDP: UDPLIB = struct
         length,
         checksum
     }) = 
-        "\n--UDP INFO--\n" ^
+        "\n-- UDP INFO --\n" ^
         "Source port: " ^ Int.toString source_port ^ "\n" ^
         "Destination port: " ^ Int.toString dest_port ^ "\n" ^
         "UDP length: " ^ Int.toString length ^ "\n" ^

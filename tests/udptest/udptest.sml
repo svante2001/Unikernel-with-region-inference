@@ -16,23 +16,33 @@ val () = (
     
     printStart ();
 
-    assert  ("UDP toString", 
+    assert  ("toString", 
             (fn () => UDP.toString (UDP.Header header)),
-            ("\n--UDP INFO--\nSource port: 12345\nDestination port: 8080\nUDP length: 20\nChecksum: 0\n"),
+            ("\n-- UDP INFO --\nSource port: 12345\nDestination port: 8080\nUDP length: 20\nChecksum: 0\n"),
             (fn s => s));
 
-    assert  ("UDP decode", 
+    assert  ("decode", 
             (fn () => UDP.decode testRaw), 
             (UDP.Header header, payload),
             (fn (h, p) => "(" ^ (UDP.toString h) ^ ", " ^ p ^ ")"));
     
-    assert  ("UDP encode", 
+    assert  ("encode", 
             (fn () => UDP.encode (UDP.Header header) payload), 
             testRaw, 
             (rawBytesString o toByteList));
 
+    assert  ("decode |> encode", 
+            (fn () => UDP.decode testRaw |> (fn (h, p) => UDP.encode h p)), 
+            testRaw,
+            (rawBytesString o toByteList));
+    
+    assert  ("encode |> decode", 
+            (fn () => UDP.encode (UDP.Header header) payload |> UDP.decode), 
+            (UDP.Header header, payload), 
+            (fn (h, p) => "(" ^ (UDP.toString h) ^ ", " ^ p ^ ")"));
+
     (* Length is calculated independent of length value in header *)
-    assert  ("UDP encode with wrong header", 
+    assert  ("encode with wrong header", 
             (fn () => UDP.encode (UDP.Header wrongHeader) payload), 
             testRaw, 
             (rawBytesString o toByteList));
