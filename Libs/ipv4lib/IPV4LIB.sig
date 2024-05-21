@@ -1,3 +1,7 @@
+(*
+    The IPv4lib structure provides useful functions for a ipv4 header.
+*)
+
 signature IPV4 = sig 
     datatype protocol = ICMP | TCP | UDP | UNKNOWN
 
@@ -27,3 +31,21 @@ signature IPV4 = sig
     val decode : string -> header * string
     val encode : header -> string -> string
 end 
+
+(*
+[header] contains the fields in a UDP header.
+
+[intToProt] converts an integer to a protocol e.g. ICMP.
+
+[protToInt] converts a protocol to an integer.
+
+[protToString] converts a protocol to a string for easy printing.
+
+[isFragmented] detects if a ipv4 header is a fragmented a returns an appropiate boolean.
+
+[toString] combines all the fields of a UDP header to easy printing. 
+
+[decode] decodes a string as a UDP header.
+
+[encode] encode the fields of a UDP header to a string.
+*)

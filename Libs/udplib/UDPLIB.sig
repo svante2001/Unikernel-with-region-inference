@@ -16,11 +16,11 @@ signature UDPLIB = sig
 end
 
 (*
-[headerUDP] contains the fields in a UDP header.
+[header] contains the fields in a UDP header.
 
-[decodeUDP] decodes a string as a UDP header.
+[toString] combines all the fields of a UDP header to easy printing. 
 
-[printUDPHeader] pretty prints the fields of a UDP header. 
+[decode] decodes a string as a UDP header.
 
-[encodeUDP] encode the fields of a UDP header to a string.
+[encode] encode the fields of a UDP header to a string.
 *)
