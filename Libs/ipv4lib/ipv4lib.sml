@@ -18,8 +18,8 @@ structure IPv4 : IPV4 = struct
     }
 
     fun toHextets [] = []
-    | toHextets [x] = [x]
-    | toHextets (x::y::t) = x * (2 ** 8) + y :: toHextets t
+      | toHextets [x] = [x]
+      | toHextets (x::y::t) = x * (2 ** 8) + y :: toHextets t
 
     fun hextetIsNeg ht = ht -  0x7FFF = 0x8000
 
@@ -28,11 +28,11 @@ structure IPv4 : IPV4 = struct
         else ht
 
     fun ipv4Checksum l = 
-    let val sum = List.foldl (op +) 0 l 
-        val carry = (sum - getRBits sum 16) div (2 ** 16) 
-        val sumWithoutCarry = sum - (sum - getRBits sum 16) 
-    in sumWithoutCarry + carry |> Word.fromInt |> Word.notb |> (fn w => Word.andb (Word.fromInt 0xFFFF, w)) |> Word.toInt
-    end
+        let val sum = List.foldl (op +) 0 l 
+            val carry = (sum - getRBits sum 16) div (2 ** 16) 
+            val sumWithoutCarry = sum - (sum - getRBits sum 16) 
+        in sumWithoutCarry + carry |> Word.fromInt |> Word.notb |> (fn w => Word.andb (Word.fromInt 0xFFFF, w)) |> Word.toInt
+        end
 
     fun intToProt i =
         case i of 
@@ -91,20 +91,20 @@ structure IPv4 : IPV4 = struct
 
     (* TODO: Does not handle options, ignores ihl *)
     fun decode s = (Header {
-        version = getLBits (String.substring (s, 0, 1) |> convertRawBytes) 4,
-        ihl = getRBits (String.substring (s, 0, 1) |> convertRawBytes) 4,
-        dscp = getLBits (String.substring (s, 1, 1) |> convertRawBytes) 6, 
-        ecn = getRBits (String.substring (s, 1, 1) |> convertRawBytes) 2,
-        total_length = String.substring (s, 2, 2) |> convertRawBytes,
-        identification = String.substring (s, 4, 2) |> convertRawBytes,
-        flags = getLBits (String.substring (s, 6, 1) |> convertRawBytes) 3,
-        fragment_offset = getRBits (String.substring (s, 6, 2) |> convertRawBytes) 13, 
-        time_to_live = String.substring (s, 8, 1) |> convertRawBytes,
-        protocol = String.substring (s, 9, 1) |> convertRawBytes |> intToProt,
-        header_checksum = String.substring (s, 10, 2) |> convertRawBytes,
-        source_addr = String.substring (s, 12, 4) |> toByteList,
-        dest_addr = String.substring (s, 16, 4) |> toByteList
-    }, String.extract (s, 20, NONE))
+            version = getLBits (String.substring (s, 0, 1) |> convertRawBytes) 4,
+            ihl = getRBits (String.substring (s, 0, 1) |> convertRawBytes) 4,
+            dscp = getLBits (String.substring (s, 1, 1) |> convertRawBytes) 6, 
+            ecn = getRBits (String.substring (s, 1, 1) |> convertRawBytes) 2,
+            total_length = String.substring (s, 2, 2) |> convertRawBytes,
+            identification = String.substring (s, 4, 2) |> convertRawBytes,
+            flags = getLBits (String.substring (s, 6, 1) |> convertRawBytes) 3,
+            fragment_offset = getRBits (String.substring (s, 6, 2) |> convertRawBytes) 13, 
+            time_to_live = String.substring (s, 8, 1) |> convertRawBytes,
+            protocol = String.substring (s, 9, 1) |> convertRawBytes |> intToProt,
+            header_checksum = String.substring (s, 10, 2) |> convertRawBytes,
+            source_addr = String.substring (s, 12, 4) |> toByteList,
+            dest_addr = String.substring (s, 16, 4) |> toByteList
+        }, String.extract (s, 20, NONE))
 
     fun toString (Header {
         version,
@@ -121,7 +121,7 @@ structure IPv4 : IPV4 = struct
         source_addr,
         dest_addr
     }) =
-        "\n\n-- IPv4 packet --\n" ^
+        "\n-- IPV4 INFO --\n" ^
         "Version: " ^ Int.toString version  ^ "\n" ^
         "IHL: " ^ Int.toString ihl  ^ "\n" ^
         "DSCP: " ^ Int.toString dscp  ^ "\n" ^

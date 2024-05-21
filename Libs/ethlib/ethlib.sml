@@ -29,8 +29,8 @@ structure Eth : ETH = struct
   fun toString (Header {et, dstMac, srcMac}) =
       "\n-- ETHERFRAME INFO --\n" ^
       "Type: " ^ (ethTypeToString et) ^ "\n" ^
-      "Destination mac-address: [" ^ (rawBytesString dstMac) ^ " ]\n" ^
-      "Source mac-address: [" ^ (rawBytesString srcMac) ^ " ]\n" 
+      "Destination mac-address: [ " ^ (rawBytesString dstMac) ^ " ]\n" ^
+      "Source mac-address: [ " ^ (rawBytesString srcMac) ^ " ]\n" 
 
   fun decode s = 
       (case String.substring (s, 12, 2) |> bytesToEthType of 
