@@ -3,7 +3,6 @@ local $(SML_LIB)/basis/basis.mlb
 ../arplib/arplib.mlb
 ../ipv4lib/ipv4lib.mlb
 ../udplib/udplib.mlb
-../bytelib/bytelib.mlb
 ../ethlib/ethlib.mlb
 ../netiflib/netiflib.mlb
 in 
