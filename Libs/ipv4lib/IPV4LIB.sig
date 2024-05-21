@@ -23,7 +23,7 @@ signature IPV4 = sig
 
     val isFragmented : header -> bool
 
-    val printHeader : header -> unit
+    val toString : header -> string
     val decode : string -> header * string
     val encode : header -> string -> string
 end 

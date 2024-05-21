@@ -189,7 +189,7 @@ structure Network : NETWORK = struct
         in  print "ipv4 called\n";
             print "ipv4pay:\n";
             print ipv4Pay;
-            IPv4.printHeader (IPv4.Header ipv4Header);
+            IPv4.toString (IPv4.Header ipv4Header) |> print;
             case payloadOpt of 
             SOME payload => (
                 case (#protocol ipv4Header) of 

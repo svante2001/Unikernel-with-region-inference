@@ -106,7 +106,7 @@ structure IPv4 : IPV4 = struct
         dest_addr = String.substring (s, 16, 4) |> toByteList
     }, String.extract (s, 20, NONE))
 
-    fun printHeader (Header {
+    fun toString (Header {
         version,
         ihl,
         dscp,
@@ -135,7 +135,6 @@ structure IPv4 : IPV4 = struct
         "Header checksum: " ^ Int.toString header_checksum  ^ "\n" ^
         "SRC-ADDRESS: " ^ rawBytesString source_addr  ^ "\n" ^
         "DST-ADDRESS: " ^ rawBytesString dest_addr  ^ "\n"
-        |> print
 
     fun encode (Header {
         version,
