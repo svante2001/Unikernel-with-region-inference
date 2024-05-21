@@ -11,7 +11,7 @@ signature ETH = sig
     val ethTypeToInt : ethType -> int 
     val ethTypeToString : ethType -> string
 
-    val printHeader : header -> unit 
+    val toString : header -> string
     val decode : string -> header * string
     val encode : header -> string -> string
 end 

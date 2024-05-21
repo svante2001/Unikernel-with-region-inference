@@ -26,12 +26,11 @@ structure Eth : ETH = struct
       | IPv4 => 0x0800
       | IPv6 => 0x86dd)
 
-  fun printHeader (Header {et, dstMac, srcMac}) =
-      "\n-- ETHERFRAME --\n" ^
+  fun toString (Header {et, dstMac, srcMac}) =
+      "\n-- ETHERFRAME INFO --\n" ^
       "Type: " ^ (ethTypeToString et) ^ "\n" ^
-      "Source mac-addreess: [" ^ (rawBytesString srcMac) ^ " ]\n" ^
-      "Destination mac-address: [" ^ (rawBytesString dstMac) ^ " ]\n"
-      |> print
+      "Destination mac-address: [" ^ (rawBytesString dstMac) ^ " ]\n" ^
+      "Source mac-address: [" ^ (rawBytesString srcMac) ^ " ]\n" 
 
   fun decode s = 
       (case String.substring (s, 12, 2) |> bytesToEthType of 
