@@ -72,7 +72,7 @@ val () = (
 
     assert  ("toString", 
             (fn () => Eth.toString (Eth.Header header)),
-            ("\n-- ETHERFRAME INFO --\nType: ARP\nDestination mac-address: [133 134 135 136 137 138 ]\nSource mac-address: [123 124 125 126 127 128 ]\n"),
+            ("\n-- ETHERFRAME INFO --\nType: ARP\nDestination mac-address: [ 133 134 135 136 137 138 ]\nSource mac-address: [ 123 124 125 126 127 128 ]\n"),
             (fn s => s));
 
     assert  ("decode", 

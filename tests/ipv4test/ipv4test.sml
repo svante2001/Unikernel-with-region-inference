@@ -118,7 +118,7 @@ val () = (
 
     assert ("toString",
         (fn () => IPv4.toString (IPv4.Header header)),
-        ("\n\n-- IPv4 packet --\nVersion: 4\nIHL: 5\nDSCP: 0\nECN: 0\nTotal length: 32\nIdentification: 50481\nFlags: 2\nFragment offset: 0\nTime to live: 64\nProtocol: UDP\nHeader checksum: 24985\nSRC-ADDRESS: 10 0 0 1\nDST-ADDRESS: 10 0 0 2\n"),
+        ("\n-- IPV4 INFO --\nVersion: 4\nIHL: 5\nDSCP: 0\nECN: 0\nTotal length: 32\nIdentification: 50481\nFlags: 2\nFragment offset: 0\nTime to live: 64\nProtocol: UDP\nHeader checksum: 24985\nSRC-ADDRESS: 10 0 0 1\nDST-ADDRESS: 10 0 0 2\n"),
         (fn s => s)
     );
  
