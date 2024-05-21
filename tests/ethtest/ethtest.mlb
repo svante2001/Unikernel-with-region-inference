@@ -1,0 +1,8 @@
+local 
+    $(SML_LIB)/basis/basis.mlb
+    ../../Libs/utilslib/utilslib.mlb
+    ../../Libs/ethlib/ethlib.mlb
+    ../testutils/testutils.mlb
+in 
+    ethtest.sml
+end 

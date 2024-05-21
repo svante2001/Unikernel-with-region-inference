@@ -1,0 +1,8 @@
+local 
+    $(SML_LIB)/basis/basis.mlb
+    ../../Libs/utilslib/utilslib.mlb
+    ../../Libs/arplib/arplib.mlb
+    ../testutils/testutils.mlb
+in 
+    arptest.sml
+end 
