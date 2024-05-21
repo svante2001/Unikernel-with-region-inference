@@ -1,0 +1,8 @@
+local 
+    $(SML_LIB)/basis/basis.mlb
+    ../../Libs/utilslib/utilslib.mlb
+    ../../Libs/ipv4lib/ipv4lib.mlb
+    ../testutils/testutils.mlb
+in 
+    ipv4test.sml
+end 

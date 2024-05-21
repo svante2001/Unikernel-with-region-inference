@@ -64,7 +64,7 @@ val () = (
 
     assert ("toString",
         (fn () => ARP.toString (ARP.Header header)),
-        ("\n-- ARP-packet --\nHardware type: 1\nProtocol type: 2048\nHardware address length: 6\nProtocol address length: 4\nOperation: Reply\nSender hardware address: [ 123 124 125 126 127 128]\nSender protocol address: [ 10 0 0 2]\nTarget hardware adress: [ 123 124 125 126 127 128]\nTarget protocol address: [ 10 0 0 2]\n\n"),
+        ("\n-- ARP-packet --\nHardware type: 1\nProtocol type: 2048\nHardware address length: 6\nProtocol address length: 4\nOperation: Reply\nSender hardware address: [123 124 125 126 127 128]\nSender protocol address: [10 0 0 2]\nTarget hardware adress: [123 124 125 126 127 128]\nTarget protocol address: [10 0 0 2]\n\n"),
         (fn s => s)
     );
 
