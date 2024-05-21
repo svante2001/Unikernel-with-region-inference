@@ -159,7 +159,7 @@ structure Network : NETWORK = struct
             val (UDP.Header udpHeader, udpPayload) = payload |> UDP.decode
             val found = List.find (fn (port, cb) => (#dest_port udpHeader) = port) (!listenOn)
         in
-            UDP.printHeader (UDP.Header udpHeader);
+            UDP.toString (UDP.Header udpHeader) |> print;
             case found of 
             SOME (_, cb) => 
                 let val payload = cb udpPayload 

@@ -7,7 +7,7 @@ structure UDP: UDPLIB = struct
         checksum: int
     } 
 
-    fun printHeader (Header {
+    fun toString (Header {
         source_port,
         dest_port,
         length,
@@ -18,7 +18,6 @@ structure UDP: UDPLIB = struct
         "Destination port: " ^ Int.toString dest_port ^ "\n" ^
         "UDP length: " ^ Int.toString length ^ "\n" ^
         "Checksum: " ^ Int.toString checksum ^ "\n"
-        |> print
     
     fun decode s = (Header {
         source_port = String.substring (s, 0, 2) |> convertRawBytes,

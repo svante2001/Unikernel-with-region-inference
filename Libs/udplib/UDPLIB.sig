@@ -10,7 +10,7 @@ signature UDPLIB = sig
         checksum: int
     } 
 
-    val printHeader : header -> unit
+    val toString : header -> string
     val decode : string -> header * string
     val encode : header -> string -> string
 end
