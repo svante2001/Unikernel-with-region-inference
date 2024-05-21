@@ -19,27 +19,18 @@ setup:
 	sudo modprobe tun
 	sudo tunctl -u $$USER -t tap0
 	sudo ifconfig tap0 10.0.0.1 up
-	(cd UnixRuntimeMini; make)	
+	(cd UnixRuntimeMini; make)
 
-tests: tests/testutils/testutils.sml
-	SML_LIB=$(SL) mlkit $(FLAGS) -no_gc -o test.exe $(shell pwd)/tests/testutils/testutils.mlb
-	./test.exe 
+tests/%test: FORCE
+	(cd tests; SML_LIB=$(SL) mlkit --no_messages $(FLAGS) -no_gc -o $*test.exe $*test/$*test.mlb)
+	./tests/$*test.exe
 
-%-test:
-	SML_LIB=$(SL) mlkit $(FLAGS) -no_gc -o test.exe $(shell pwd)/tests/$*test/$*test.mlb
-	./test.exe
+FORCE: ;
 
-echo: $(t)
-	SML_LIB=$(SL) mlkit $(FLAGS) -no_gc -o echo.exe -libdirs "." -libs "m,c,dl,tuntaplib" $(shell pwd)/echo/main.mlb
+tests: unix tests/*test 
 
-facfib: $(t)
-	SML_LIB=$(SL) mlkit $(FLAGS) -no_gc -o facfib.exe -libdirs "." -libs "m,c,dl,tuntaplib" $(shell pwd)/facfib/main.mlb
-
-monteCarlo: $(t)
-	SML_LIB=$(SL) mlkit $(FLAGS) -no_gc -o monteCarlo.exe -libdirs "." -libs "m,c,dl,tuntaplib" $(shell pwd)/monteCarlo/main.mlb
-
-sort: $(t)
-	SML_LIB=$(SL) mlkit $(FLAGS) -no_gc -o sort.exe -libdirs "." -libs "m,c,dl,tuntaplib" $(shell pwd)/sort/main.mlb
+%-app: $(t)
+	SML_LIB=$(SL) mlkit $(FLAGS) -no_gc -o $*.exe -libdirs "." -libs "m,c,dl,tuntaplib" $(shell pwd)/$*/main.mlb
 
 unix:
 	(cd UnixRuntimeMini; make)
@@ -59,4 +50,5 @@ clean:
 	-rm -rf echo/MLB
 	-rm -rf monteCarlo/MLB
 	-rm -rf sort/MLB
-	-rm *.exe
+	-rm -r *.exe
+	-rm -r tests/*.exe
