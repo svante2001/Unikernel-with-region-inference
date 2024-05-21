@@ -1,0 +1,8 @@
+local 
+    $(SML_LIB)/basis/basis.mlb
+    ../../Libs/utilslib/utilslib.mlb
+    ../../Libs/udplib/udplib.mlb
+    ../testutils/testutils.mlb
+in 
+    udptest.sml
+end 
