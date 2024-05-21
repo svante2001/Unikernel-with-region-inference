@@ -1,10 +1,18 @@
 structure Network : NETWORK = struct
 
-    val mac = [123, 124, 125, 126, 127, 128]
+    val mac = [123, 124, 125, 126, 127, 128] (* hard-coded *)
 
-    val ipAddress = [10, 0, 0, 2]
+    val ipAddress = [10, 0, 0, 2] (* also hard-coded *)
 
     val mtu = 1500
+
+    val log = ref false
+
+    fun logPrint str = if !log then print str else ()
+
+    fun logOn () = log := true 
+
+    fun logOff () = log := false
 
     datatype packetID = PktID of {
         ipaddr: int list,
@@ -29,7 +37,7 @@ structure Network : NETWORK = struct
 
     fun bindUDP (port : int) (cbf : string -> string) = listenOn := (port, cbf) :: !listenOn 
 
-    (* We assume that destination is the same *)
+    (* We assume that destination is the same. *)
     fun initPktID (IPv4.Header ipv4Hdr) = PktID {
         ipaddr = #source_addr ipv4Hdr, 
         id = #identification ipv4Hdr, 
@@ -38,22 +46,17 @@ structure Network : NETWORK = struct
 
     fun updatePacketArray pli arri arr payload = 
         if pli < String.size payload then 
-            ( 
-            (* print "Update array\n"; *)
-            Array.update (arr, arri, String.sub (payload, pli));
-            (* print "Array updated\n"; *)
+            (Array.update (arr, arri, String.sub (payload, pli));
             updatePacketArray (pli+1) (arri+1) arr payload)
         else ()
 
     fun initAssembling (IPv4.Header ipv4Hdr) payload = 
         let val pktID = initPktID (IPv4.Header ipv4Hdr) 
             val arr = Array.array ((#fragment_offset ipv4Hdr) * 8 + String.size payload, #"\000")
-        in  print "initializing assemblng\n";
-            (case findi (fn (pktID2, _) => pktIDCmp pktID pktID2) (!fragmentBuffer)  of 
+        in
+            (case findi (fn (pktID2, _) => pktIDCmp pktID pktID2) (!fragmentBuffer) of 
                 SOME (i, (_, l)) => (
-                    "Found fragmentList with length: " ^ (List.length (!l) |> Int.toString) ^ "\n" |> print;
-                    List.app (fn (Fragment f) => updatePacketArray 0 (if (#offset f) = 0 then 0 else (#offset f) * 8) arr (#data f)) (!l); 
-                    print "Updated packet\n";
+                    List.app (fn (Fragment f) => updatePacketArray 0 (if (#offset f) = 0 then 0 else (#offset f) * 8) arr (#data f)) (!l);
                     fragmentBuffer := List.drop (!fragmentBuffer, i))
             |   NONE => ());
             assemblingList := (pktID, arr) :: (!assemblingList)
@@ -74,11 +77,10 @@ structure Network : NETWORK = struct
         let val pktID = initPktID ipv4Hdr
         in  case findi (fn (pktID2, _) => pktIDCmp pktID pktID2) (!assemblingList) of 
                 SOME (i, (_, a)) => (
-                    print "Now assembling \n";
                     assemblingList := List.drop (!assemblingList, i);
                     Array.foldr (op ::) [] a |> String.implode
                 )
-            |   NONE => raise Fail "Could not assemble packet"
+            |   NONE => raise Fail "Could not assemble packet."
         end
 
     fun ethSend et dstMac payload = 
@@ -136,9 +138,10 @@ structure Network : NETWORK = struct
 
     fun handleArp (Eth.Header ethHeader) ethFrame =
         let val arp = SOME (String.extract (ethFrame, 14, NONE) |> ARP.decode) handle _ => NONE
-        in  print "Arp called\n";
+        in
             case arp of
                 SOME (ARP.Header arpHeader) => 
+                    (ARP.toString (ARP.Header arpHeader) |> logPrint;
                     ARP.encode (ARP.Header {
                         htype = 1, 
                         ptype = 0x0800,
@@ -148,10 +151,10 @@ structure Network : NETWORK = struct
                         sha = mac, 
                         spa = ipAddress,
                         tha = (#sha arpHeader),
-                        tpa = List.concat [(#spa arpHeader), [0, 0]] (* TODO: Why is the zeros needed *)
+                        tpa = List.concat [(#spa arpHeader), [0, 0]]
                     }) 
-                    |> ethSend Eth.ARP (#dstMac ethHeader)
-            |   NONE => print "Arp packet could not be decoded"
+                    |> ethSend Eth.ARP (#dstMac ethHeader))
+            |   NONE => logPrint "Arp packet could not be decoded.\n"
         end
 
     fun handleUDP dstMac (IPv4.Header ipv4Header) payload =
@@ -159,22 +162,27 @@ structure Network : NETWORK = struct
             val (UDP.Header udpHeader, udpPayload) = payload |> UDP.decode
             val found = List.find (fn (port, cb) => (#dest_port udpHeader) = port) (!listenOn)
         in
-            UDP.toString (UDP.Header udpHeader) |> print;
+            UDP.toString (UDP.Header udpHeader) |> logPrint;
             case found of 
             SOME (_, cb) => 
                 let val payload = cb udpPayload 
-                in  UDP.encode (UDP.Header {length = 0, source_port = (#dest_port udpHeader), dest_port = (#source_port udpHeader), checksum = 0}) payload
-                    |> ipv4Send ({identification = (#identification ipv4Header), dstMac = dstMac, protocol = IPv4.UDP, dest_addr = #source_addr ipv4Header})
+                in  UDP.encode (UDP.Header {length = 0, 
+                                            source_port = (#dest_port udpHeader), 
+                                            dest_port = (#source_port udpHeader), 
+                                            checksum = 0}) payload
+                    |> ipv4Send ({identification = (#identification ipv4Header), 
+                                                    dstMac = dstMac, 
+                                                    protocol = IPv4.UDP, 
+                                                    dest_addr = (#source_addr ipv4Header)})
                 end
-            | NONE =>  UDP.encode (UDP.Header {  length = 8 + String.size payload, 
-                                                source_port = (#dest_port udpHeader), 
-                                                dest_port = (#source_port udpHeader), 
-                                                checksum = 0}) 
-                                                "Port is not mapped to a function."
-                                                |> ipv4Send ({identification = (#identification ipv4Header), dstMac = dstMac, protocol = IPv4.UDP, dest_addr = #source_addr ipv4Header})
+            | NONE =>  UDP.encode (UDP.Header {length = 8 + String.size payload, 
+                                               source_port = (#dest_port udpHeader), 
+                                               dest_port = (#source_port udpHeader), 
+                                               checksum = 0}) 
+                                               "Port is not mapped to a function."
+                                               |> ipv4Send ({identification = (#identification ipv4Header), dstMac = dstMac, protocol = IPv4.UDP, dest_addr = #source_addr ipv4Header})
         end
 
-    (* TODO: Handle DF flag*)
     fun handleIPv4 (Eth.Header ethHeader) ethFrame = 
         let val (IPv4.Header ipv4Header, ipv4Pay) = String.extract (ethFrame, 14, NONE) |> IPv4.decode
             val payloadOpt = 
@@ -182,19 +190,18 @@ structure Network : NETWORK = struct
                 then SOME ipv4Pay
                 else (addFragment (IPv4.Header ipv4Header) ipv4Pay; (* Assumes packets arrive in order *)
                     if (#flags ipv4Header) = 0 
-                    then ( print "Assembling in progess\n";
-                            initAssembling (IPv4.Header ipv4Header) ipv4Pay;
-                            SOME (assemblePacket (IPv4.Header ipv4Header)))
-                    else NONE)
-        in  print "ipv4 called\n";
-            print "ipv4pay:\n";
-            print ipv4Pay;
-            IPv4.toString (IPv4.Header ipv4Header) |> print;
+                    then ( 
+                        initAssembling (IPv4.Header ipv4Header) ipv4Pay;
+                        SOME (assemblePacket (IPv4.Header ipv4Header)))
+                    else 
+                        NONE)
+        in
+            IPv4.toString (IPv4.Header ipv4Header) |> logPrint;
             case payloadOpt of 
             SOME payload => (
                 case (#protocol ipv4Header) of 
                   IPv4.UDP => handleUDP (#dstMac ethHeader) (IPv4.Header ipv4Header) payload
-                | _ => print "ipv4-handler: protocol not supported\n"
+                | _ => logPrint "IPv4 Handler: Protocol is not supported.\n"
             )
             | NONE => ()
         end
@@ -205,12 +212,15 @@ structure Network : NETWORK = struct
             val ethFrame = String.extract (rawTap, 0, NONE)
             val (ethHeader, ethPayload) = ethFrame |> Eth.decode 
             val Eth.Header {et, dstMac, srcMac} = ethHeader
-        in
+        in  
+            "\n==== FROM: " ^ (rawBytesString srcMac) ^ " ====\n" |> logPrint;
+            Eth.toString ethHeader |> logPrint;
             (case et of 
                   Eth.ARP => handleArp ethHeader ethFrame
                 | Eth.IPv4 => handleIPv4 ethHeader ethFrame
-                | _ => print "listen: protocol not supported\n"
+                | _ => logPrint "\nlisten: Protocol not supported.\n"
             );
+            "\n==== END: " ^ (rawBytesString srcMac) ^ " ====\n" |> logPrint;
             listen ()
-        end) handle _ => (print "Encountered error in handling!\n"; listen ())
+        end) handle _ => (logPrint "Encountered an error in handling!\n"; listen ())
 end
