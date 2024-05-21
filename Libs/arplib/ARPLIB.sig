@@ -17,7 +17,7 @@ signature ARPLIB = sig
     val arpOperationToString : ARP_OP -> string
     val arpOperationToInt : ARP_OP -> int
 
-    val printHeader : header -> unit
+    val toString : header -> string
     val decode : string -> header
     val encode : header -> string
 end

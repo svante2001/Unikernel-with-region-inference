@@ -29,7 +29,7 @@ structure ARP : ARPLIB = struct
     fun arpOperationToInt Request = 1
     | arpOperationToInt Reply = 2 
 
-    fun printHeader (Header { htype, ptype, hlen, plen, oper, sha, spa, tha, tpa }) =
+    fun toString (Header { htype, ptype, hlen, plen, oper, sha, spa, tha, tpa }) =
         "\n-- ARP-packet --\n" ^
         "Hardware type: " ^ Int.toString htype ^ "\n" ^
         "Protocol type: " ^ Int.toString ptype ^ "\n" ^
@@ -40,7 +40,6 @@ structure ARP : ARPLIB = struct
         "Sender protocol address: [" ^ rawBytesString spa ^ "]\n" ^
         "Target hardware adress: [" ^ rawBytesString tha ^ "]\n" ^
         "Target protocol address: [" ^ rawBytesString tpa ^ "]\n\n" 
-        |> print
 
     fun encode (Header { htype, ptype, hlen, plen, oper, sha, spa, tha, tpa }) =
         (intToRawbyteString htype 2) ^
