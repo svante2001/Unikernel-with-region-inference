@@ -1,4 +1,4 @@
-# Unikernel-with-region-inference
+<!-- # Unikernel-with-region-inference
 
 ## MirageOS guides
 [Installation](https://mirage.io/docs/install) <br />
@@ -19,4 +19,29 @@
 `sudo ifconfig tap0 10.0.0.1 up`
 
 ### Monitor network interface (tap0)
-`sudo tshark -i tap0`
+`sudo tshark -i tap0` -->
+
+# Unikernel-with-region-inference
+## MirageOS
+With MirageOS one implements a unikernel in OCaml and has been used as benchmark in this project. For a better overview see [MirageOS guide](https://mirage.io/docs/hello-world). To run example unikernel use: <br />
+```
+$ mirage configure -t unix
+$ dune build
+```
+## SML unikernel
+The SML unikernel can run on both UNIX and Xen (see below). The project includes four small examples of unikernels:
+* Echo: a simple echo server that mirrors exactly what it receives
+* Facfib: serves two ports with the factorial and fibonacci functions respectively
+* MonteCarlo: estimates pi using a Lehmer PRNG
+* Sort: sorts its given integers using mergesort
+
+In order for the network to be initialized use: <br />
+`$ make setup`
+
+Once the unikernel is running one can send UDP packets to via netcat: <br />
+`$ echo -n “Hello, World!” | nc -nw1 127.0.0.2 8080`
+
+### UNIX
+make setup
+make -----
+### XEN
