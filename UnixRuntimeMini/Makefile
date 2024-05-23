@@ -5,11 +5,11 @@ MLKIT=SML_LIB=. mlkit -no_gc
 all: lib/runtimeSystem.a basis
 
 lib/runtimeSystem.a:
+	- mkdir lib
 	(cd src/RuntimeMini; make)
 
 .PHONY: basis
 basis: lib/runtimeSystem.a
-	- mkdir lib
 	$(MLKIT) -c basis/basis.mlb
 
 .PHONY: clean
