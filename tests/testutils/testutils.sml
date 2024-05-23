@@ -24,4 +24,4 @@ fun assert(name, f, expected, toString) =
                                     handle _ => printRed "Error occurred in test\n")
 
 fun printStart () = "\n-- Testsuite: " ^ (!name) ^ " --\n" |> print
-fun printResult () = "\n" ^ (!successes |> Int.toString) ^ " out of " ^ (!tests |> Int.toString) ^ " tests passed\n" |> (if (!successes) = (!tests) then printGreen else (printRed; raise Fail "Test failed.")
+fun printResult () = "\n" ^ (!successes |> Int.toString) ^ " out of " ^ (!tests |> Int.toString) ^ " tests passed\n" |> (if (!successes) = (!tests) then printGreen else (fn s => (printRed s; raise Fail "Test failed.")))
