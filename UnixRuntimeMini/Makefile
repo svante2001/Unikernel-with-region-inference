@@ -9,6 +9,7 @@ lib/runtimeSystem.a:
 
 .PHONY: basis
 basis: lib/runtimeSystem.a
+	- mkdir lib
 	$(MLKIT) -c basis/basis.mlb
 
 .PHONY: clean
