@@ -26,7 +26,7 @@ setup:
 	(cd UnixRuntimeMini; make)
 
 tests/%test: FORCE
-	(cd tests; SML_LIB=$(SL) mlkit --no_messages $(FLAGS) -no_gc -o $*test.exe $*test/$*test.mlb)
+	(cd tests; SML_LIB=$(SL) mlkit $(FLAGS) -no_gc -o $*test.exe $*test/$*test.mlb)
 	./tests/$*test.exe
 
 FORCE: ;
