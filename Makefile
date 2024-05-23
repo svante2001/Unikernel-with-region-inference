@@ -38,7 +38,7 @@ tests: unix tests/*test
 
 unix:
 	(cd UnixRuntimeMini; make)
-	gcc -I $(MLKIT_SOURCE_RUNTIME) -o libtuntaplib.a -c Libs/netiflib/netif-tuntap.c
+	gcc -I $(SL) -o libtuntaplib.a -c Libs/netiflib/netif-tuntap.c
 
 xen-runtime:
 	(cd XenRuntimeMini; make)
