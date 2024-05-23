@@ -1,6 +1,7 @@
 #!/bin/bash
 
-# Make echo
+# Make setup and echo
+make setup
 make echo-app
 
 # Run echo
