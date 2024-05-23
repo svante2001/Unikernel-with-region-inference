@@ -34,6 +34,7 @@ jobs:
       - name: Install MLKit and smlpkg
         working-directory: ${{ env.RUNHOME }}
         run: |
+          sudo apt install -y uml-utilities
           echo "[OS: $OS, HOME: $RUNHOME]"
           wget https://github.com/diku-dk/smlpkg/releases/download/v0.1.4/smlpkg-bin-dist-${{env.OS}}.tgz
           tar xzf smlpkg-bin-dist-${{env.OS}}.tgz
