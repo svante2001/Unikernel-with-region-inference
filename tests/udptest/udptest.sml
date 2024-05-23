@@ -18,7 +18,7 @@ val () = (
 
     assert  ("toString", 
             (fn () => UDP.toString (UDP.Header header)),
-            ("\n-- UDP INFO --\nSource port: 12345\nDestination port: 8080\nUDP length: 20\nChecksum: 0\n"),
+            ("\n-- UDP INFO --\nSource port: 12345\nDestination port: 8081\nUDP length: 20\nChecksum: 0\n"),
             (fn s => s));
 
     assert  ("decode", 
