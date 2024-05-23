@@ -8,8 +8,9 @@ nohup ./echo.exe 2>&1 &
 echo $! > PID.txt
 
 # Send Hamlet.txt
-echo Sending file
+sleep 1
 cat tests/hamlet.txt | nc -u -nw1 10.0.0.2 8080 > tests/out.txt
+sleep 1
 
 # Close echo
 kill $(cat PID.txt)
