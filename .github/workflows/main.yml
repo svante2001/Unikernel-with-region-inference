@@ -55,8 +55,5 @@ jobs:
           sudo apt-get install -y mlton
           mlton
 
-      - name: Build
-        run: MLCOMP=${{ matrix.mlcomp }} make clean all
-
       - name: Run tests
-        run: MLCOMP=${{ matrix.mlcomp }} make tests
+        run: make tests
