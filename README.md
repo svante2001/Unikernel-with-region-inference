@@ -26,13 +26,13 @@
 The SML unikernel can run on both UNIX and Xen (see below). The project includes four small examples of unikernels:
 * Echo: a simple echo server that mirrors exactly what it receives
 * Facfib: serves two ports with the factorial and fibonacci functions respectively
-* MonteCarlo: estimates pi using a Lehmer PRNG (run `smlpkg sync` before use). 
+* MonteCarlo: estimates pi using the [sml-sobol library](https://github.com/diku-dk/sml-sobol) (run `smlpkg sync` before use). 
 * Sort: sorts its given integers using mergesort
 
 In order for the network to be initialized use: <br />
 `$ make setup`
 
-Once the unikernel is running one can send UDP packets to via netcat: <br />
+Once the unikernel is running one can send UDP packets to the unikernel via netcat: <br />
 `$ echo -n “Hello, World!” | nc -u -nw1 127.0.0.2 8080`
 
 ### UNIX
