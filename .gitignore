@@ -1,6 +1,7 @@
 # Ignore /duniverse folder
 **/duniverse
 
+lib/
 MLB/
 *.o
 *.a
