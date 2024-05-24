@@ -8,14 +8,16 @@ make echo-app
 nohup ./echo.exe 2>&1 &
 echo $! > PID.txt
 
-# Send Hamlet.txt
-cat tests/hamlet.txt | nc -u -nw1 10.0.0.2 8080 > tests/out.txt
+# Send pi.txt
+sleep 1
+cat tests/pi.txt | nc -u -nw1 10.0.0.2 8080 > tests/out.txt
+sleep 1
 
 # Close echo
 kill $(cat PID.txt)
 
 # Compare
-if diff tests/hamlet.txt tests/out.txt > /dev/null; then
+if diff tests/pi.txt tests/out.txt > /dev/null; then
     echo "Files are the same."
 else
     echo "Error: Files are different!"
