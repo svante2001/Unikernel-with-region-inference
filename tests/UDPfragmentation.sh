@@ -21,6 +21,7 @@ if diff tests/pi.txt tests/out.txt > /dev/null; then
     echo "Files are the same."
 else
     echo "Error: Files are different!"
+    diff tests/pi.txt tests/out.txt | echo
     exit 1
 fi
 
