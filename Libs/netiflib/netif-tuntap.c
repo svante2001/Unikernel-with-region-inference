@@ -66,10 +66,43 @@ int tun_alloc(char *dev, int flags) {
      exit(0);
      return err;
    }
+
+   /* if the operation was successful, write back the name of the
+   * interface to the variable "dev", so the caller can know
+   * it. Note that the caller MUST reserve space in *dev (see calling
+   * code below) */
+  strcpy(dev, ifr.ifr_name);
   
   /* this is the special file descriptor that the caller will use to talk
    * with the virtual interface */
   return fd;
+}
+
+void setup(char *dev) {
+    int fd;
+    struct ifreq ifr;
+    int flags;
+
+    if((fd = socket(PF_INET, SOCK_DGRAM, 0)) == -1)
+        printf("setup and running socket");
+
+    strncpy(ifr.ifr_name, dev, IFNAMSIZ);
+    ifr.ifr_addr.sa_family = AF_INET;
+    #if defined(__FreeBSD__) || defined(__OpenBSD__)
+    ifr.ifr_addr.sa_len = IFNAMSIZ;
+    #endif /* __FreeBSD__ */
+
+    if (ioctl(fd, SIOCGIFFLAGS, &ifr) == -1)
+        printf("setup and running flags");
+
+    strncpy(ifr.ifr_name, dev, IFNAMSIZ);
+
+    flags = ifr.ifr_flags | (IFF_UP|IFF_RUNNING|IFF_BROADCAST|IFF_MULTICAST);
+    if (flags != ifr.ifr_flags) {
+        ifr.ifr_flags = flags;
+        if (ioctl(fd, SIOCSIFFLAGS, &ifr) == -1)
+        printf("set_up_and_running SIOCSIFFLAGS");
+    }
 }
 
 String REG_POLY_FUN_HDR(toMLString, Region rAddr, const char *cStr, int len) {  
@@ -94,6 +127,8 @@ String readTap(int addr, Region str_r, Context ctx) {
         tapfd = tun_alloc(tap_name, IFF_TAP);  /* tap interface */
 
         if (tapfd == -1) return NULL;
+
+        setup(tap_name);
     }
 
     char buf[MTU]; // MTU + 18 (the 18 bytes are header and frame check sequence)
