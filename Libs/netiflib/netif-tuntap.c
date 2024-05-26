@@ -15,9 +15,6 @@
 #include <net/if.h>
 #include <sys/types.h>
 #include <errno.h>
-#if defined(__FreeBSD__) || defined(__OpenBSD__)
-#include <netinet/in.h>
-#endif /* __FreeBSD__ */
 #include <ifaddrs.h>
 #include <assert.h>
 #include <linux/if.h>
@@ -88,9 +85,6 @@ void setup(char *dev) {
 
     strncpy(ifr.ifr_name, dev, IFNAMSIZ);
     ifr.ifr_addr.sa_family = AF_INET;
-    #if defined(__FreeBSD__) || defined(__OpenBSD__)
-    ifr.ifr_addr.sa_len = IFNAMSIZ;
-    #endif /* __FreeBSD__ */
 
     if (ioctl(fd, SIOCGIFFLAGS, &ifr) == -1)
         printf("setup and running flags");
