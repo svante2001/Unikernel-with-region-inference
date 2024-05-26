@@ -23,6 +23,8 @@
 #include <linux/if.h>
 #include <linux/if_tun.h>
 
+#define MTU 1500
+
 /*
     This function including commens is copied from: 
     https://backreference.org/2010/03/26/tuntap-interface-tutorial/index.html
@@ -94,8 +96,8 @@ String readTap(int addr, Region str_r, Context ctx) {
         if (tapfd == -1) return NULL;
     }
 
-    char buf[1518]; // MTU + 18 (the 18 bytes are header and frame check sequence)
-    ssize_t bytesRead = read(tapfd, buf, 1518);
+    char buf[MTU]; // MTU + 18 (the 18 bytes are header and frame check sequence)
+    ssize_t bytesRead = read(tapfd, buf, MTU);
 
     // Null-terminate the buffer
     buf[bytesRead] = '\0';
@@ -104,20 +106,13 @@ String readTap(int addr, Region str_r, Context ctx) {
 }
 
 void writeTap(uintptr_t byte_list) {
-    char toWrite_buf[1518];
-    size_t toWrite_len = 1518;
-
-    toWrite_buf[0] = toWrite_buf[1] = 0;
+    char toWrite_buf[MTU] = {0};
 
     uintptr_t ys;
     int i = 4;
-    for (ys = byte_list; isCONS(ys) && i <= 1518; ys=tl(ys)) {
+    for (ys = byte_list; isCONS(ys) && i <= MTU; ys=tl(ys)) {
         toWrite_buf[i++] = convertIntToC(hd(ys));
     }
-
-    // Copying ethtype bytes to start of buffer
-    toWrite_buf[2] = toWrite_buf[13];
-    toWrite_buf[3] = toWrite_buf[14];
 
     ssize_t bytes_written = write(tapfd, toWrite_buf, i);
 }
