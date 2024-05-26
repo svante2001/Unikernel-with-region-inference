@@ -50,3 +50,6 @@ jobs:
           
       - name: Run integration tests
         run: ./tests/UDPfragmentation.sh
+
+      - name: build application test
+        run: make echo-app
