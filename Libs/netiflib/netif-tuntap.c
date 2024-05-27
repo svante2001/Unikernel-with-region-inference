@@ -143,5 +143,9 @@ void writeTap(uintptr_t byte_list) {
         toWrite_buf[i++] = convertIntToC(hd(ys));
     }
 
+    // Copying ethtype bytes to start of buffer
+    toWrite_buf[2] = toWrite_buf[13];
+    toWrite_buf[3] = toWrite_buf[14];
+
     ssize_t bytes_written = write(tapfd, toWrite_buf, i);
 }
