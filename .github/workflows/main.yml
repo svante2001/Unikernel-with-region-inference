@@ -45,11 +45,11 @@ jobs:
           mkdir -p .mlkit
           echo "SML_LIB $HOME/mlkit-bin-dist-${{env.OS}}/lib/mlkit" > .mlkit/mlb-path-map
 
+      - name: build application test
+        run: make echo-app
+
       - name: Run unit tests
         run: make tests
           
       - name: Run integration tests
         run: ./tests/UDPfragmentation.sh
-
-      - name: build application test
-        run: make echo-app
