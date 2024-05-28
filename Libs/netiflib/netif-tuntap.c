@@ -20,7 +20,7 @@
 #include <linux/if.h>
 #include <linux/if_tun.h>
 
-#define MTU 1500
+#define MTU 1518
 
 /*
     This function including commens is copied from: 
