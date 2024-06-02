@@ -40,21 +40,23 @@ and fastFibH 0 : IntInf.int * IntInf.int = (IntInf.fromInt 0, IntInf.fromInt 1)
 val _ = (
     bindUDP 8080 (
         fn data => 
-            let val n = data |> IntInf.fromString |> valOf
-            in  fac n |> IntInf.toString
-            end
+            case IntInf.fromString data of
+                SOME n => fac n |> IntInf.toString
+            | NONE => "Invalid input"
     );
+
     bindUDP 8081 (
-        fn data => 
-            let val n = data |> IntInf.fromString |> valOf
-            in  fib n |> IntInf.toString
-            end
+        fn data =>
+            case IntInf.fromString data of
+                SOME n => fib n |> IntInf.toString 
+            | NONE => "Invalid input"
     );
+
     bindUDP 8082 (
         fn data =>
-            let val n = data |> Int.fromString |> valOf
-            in fastFib n |> IntInf.toString
-            end
+            case Int.fromString data of
+                SOME n => fastFib n |> IntInf.toString 
+            | NONE => "Invalid input"
     );
 
     listen ()
