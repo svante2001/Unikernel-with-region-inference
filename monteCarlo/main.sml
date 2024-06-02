@@ -22,10 +22,12 @@ fun monteCarlo n =
 
 val _ = (
     bindUDP 8080 (
-        fn data => 
-            let val n = data |> Int.fromString |> valOf
-            in monteCarlo n |> Real.toString
-            end
+        fn data =>
+            case Int.fromString data of
+                SOME n => monteCarlo n |> Real.toString
+                | NONE => "Invalid input"
     );
+
+
     listen ()
 )
