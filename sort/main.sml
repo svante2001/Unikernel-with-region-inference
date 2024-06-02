@@ -11,10 +11,26 @@ fun intListToString l =
 fun stringToIntList s =
     let
         val l = String.tokens (fn c => c = #" ") s
-        val intL = map (valOf o Int.fromString) l
+        
+        fun stringToInt str =
+            case Int.fromString str of
+                SOME i => SOME i
+              | NONE => NONE
+        
+        fun intList lst =
+            case lst of
+                [] => SOME []
+              | x::xs =>
+                    (case stringToInt x of
+                        SOME i =>
+                            (case intList xs of
+                                SOME ys => SOME (i::ys)
+                              | NONE => NONE)
+                      | NONE => NONE)
     in
-        intL
+        intList l
     end
+
 
 fun merge [] l = l
     | merge l [] = l
@@ -34,7 +50,10 @@ fun mergesort [] = []
 
 val _ = (
     bindUDP 8080 (
-        fn data => data |> stringToIntList |> mergesort |> intListToString 
+        fn data =>
+            case data |> stringToIntList of
+                SOME n => mergesort n |> intListToString
+                | NONE => "Invalid input"
     );
     listen ()
 )
