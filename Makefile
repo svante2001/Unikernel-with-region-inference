@@ -1,6 +1,6 @@
 MLKIT_SOURCE_RUNTIME=~/mlkit/src/Runtime 
 
-MINIOS_PATH=/home/axel/Projects/mini-os-HEAD-b6a5b4d
+MINIOS_PATH=
 
 SL=$(shell pwd)/UnixRuntimeMini
 
@@ -33,15 +33,16 @@ FORCE: ;
 
 tests: unix tests/*test 
 
-%-app: $(t)
+%.exe: $(t)
 	SML_LIB=$(SL) mlkit $(FLAGS) -no_gc -o $*.exe -libdirs "." -libs "m,c,dl,netiflib" $(shell pwd)/$*/main.mlb
+
+%-app: $(t) %.exe
 ifeq ($(t), xen)
 	- rm -r app.a
 	- rm -r build
 	mkdir build
 	ar -x --output build XenRuntimeMini/libm.a
 	ar -x --output build XenRuntimeMini/lib/runtimeSystem.a
-	sleep 3
 	cp libnetiflib.a build/libnetiflib.o
 	cp $(shell cat $*.exe | cut -d " " -f2-) build
 	ar -rc app.a build/*.o
@@ -49,6 +50,8 @@ ifeq ($(t), xen)
 	(cd $(MINIOS_PATH); make)
 endif
 
+configure:
+	sed -i 's|$$(LD) -r $$(LDFLAGS) $$(HEAD_OBJ) $$(OBJS) $$(LDARCHLIB) -o $$@|$$(LD) -r $$(LDFLAGS) $$(HEAD_OBJ) $$(OBJS) $$(LDARCHLIB) $(shell pwd)/app.a -o $$@|g' $(MINIOS_PATH)/Makefile
 
 unix:
 	(cd UnixRuntimeMini; make)
