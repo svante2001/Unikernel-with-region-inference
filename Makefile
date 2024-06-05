@@ -50,13 +50,11 @@ endif
 
 unix:
 	(cd UnixRuntimeMini; make)
-	gcc -I $(SL)/src/RuntimeMini -o libtuntaplib.o -c Libs/netiflib/netif-tuntap.c
+	gcc -I $(SL)/src/RuntimeMini -o libtuntaplib.a -c Libs/netiflib/netif-tuntap.c
 
 xen:
 	(cd XenRuntimeMini; make)
 	gcc -fno-builtin -Wall -Wredundant-decls -Wno-format -Wno-redundant-decls -Wformat -fno-stack-protector -fgnu89-inline -Wstrict-prototypes -Wnested-externs -Wpointer-arith -Winline -g -D__INSIDE_MINIOS__ -m64 -mno-red-zone -fno-reorder-blocks -fno-asynchronous-unwind-tables -DCONFIG_START_NETWORK -DCONFIG_SPARSE_BSS -DCONFIG_BLKFRONT -DCONFIG_NETFRONT -DCONFIG_FBFRONT -DCONFIG_KBDFRONT -DCONFIG_CONSFRONT -DCONFIG_XENBUS -DCONFIG_PARAVIRT -DCONFIG_LIBXS -D__XEN_INTERFACE_VERSION__=0x00030205 -isystem XenRuntimeMini/src/RuntimeMini -isystem XenRuntimeMini/include -isystem XenRuntimeMini/include/x86 -isystem XenRuntimeMini/include/x86/x86_64 -o libtuntaplib.o -c Libs/netiflib/netif-miniOS.c
-
-configure:
 
 
 clean:
