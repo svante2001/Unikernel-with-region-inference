@@ -79,7 +79,7 @@ int app_main(void *p) {
     return 0;
 }
 
-String readTap(int addr, Region str_r, Context ctx) {
+String Receive(int addr, Region str_r, Context ctx) {
     int newReadPos = (readPos + 1) % QUEUE_SIZE;
     while (newReadPos == writePos);
 
@@ -91,7 +91,7 @@ String readTap(int addr, Region str_r, Context ctx) {
     return my_convertStringToML(str_r, (char *)pktptr, pktlen);;
 }
 
-void writeTap(uintptr_t byte_list) {
+void Send(uintptr_t byte_list) {
     down(&net_sem);
     unsigned char toWrite_buf[1518];
 
