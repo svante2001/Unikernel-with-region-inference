@@ -36,7 +36,10 @@ tests: unix tests/*test
 %.exe: $(t)
 	SML_LIB=$(SL) mlkit $(FLAGS) -no_gc -o $*.exe -libdirs "." -libs "m,c,dl,netiflib" $(shell pwd)/$*/main.mlb
 
-%-app: $(t) %.exe
+%-app: $(t) %.exe 
+ifeq ($(t), unix) 
+	:
+endif
 ifeq ($(t), xen)
 	- rm -r app.a
 	- rm -r build
