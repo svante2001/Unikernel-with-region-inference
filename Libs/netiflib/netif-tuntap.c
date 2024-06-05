@@ -112,7 +112,7 @@ String REG_POLY_FUN_HDR(toMLString, Region rAddr, const char *cStr, int len) {
 }
 
 int tapfd = -1;
-String readTap(int addr, Region str_r, Context ctx) {
+String Receive(int addr, Region str_r, Context ctx) {
 
     if (tapfd == -1) {
         char tap_name[IFNAMSIZ];
@@ -134,7 +134,7 @@ String readTap(int addr, Region str_r, Context ctx) {
     return toMLString(str_r, buf+4, bytesRead-4); // For some reason we get 4 extra bytes we do not use
 }
 
-void writeTap(uintptr_t byte_list) {
+void Send(uintptr_t byte_list) {
     char toWrite_buf[MTU] = {0};
 
     uintptr_t ys;

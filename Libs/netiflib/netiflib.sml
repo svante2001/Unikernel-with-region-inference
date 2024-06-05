@@ -1,7 +1,7 @@
 structure Netif : NETIF = struct 
-  fun readTap() : string =
-    prim ("readTap", ())
+  fun receive() : string =
+    prim ("Receive", ())
 
-  fun writeTap(byte_list : int list) : unit =
-    prim ("writeTap", byte_list)
+  fun send(byte_list : int list) : unit =
+    prim ("Send", byte_list)
 end 

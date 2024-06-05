@@ -4,12 +4,12 @@
 
 
 signature NETIF = sig 
-    val readTap : unit -> string 
-    val writeTap : int list -> unit
+    val receive : unit -> string 
+    val send : int list -> unit
 end 
 
 (*
-[readTap] reads from the 'tap' and returns what was read as a string.
+[receive] reads from the 'tap' and returns what was read as a string.
 
-[writeTap] writes a bytelist to a 'tap'.
+[send] writes a bytelist to a 'tap'.
 *)

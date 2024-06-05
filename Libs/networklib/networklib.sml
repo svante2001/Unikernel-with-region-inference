@@ -92,7 +92,7 @@ structure Network : NETWORK = struct
         in  
             ethHeader
             |> toByteList
-            |> Netif.writeTap
+            |> Netif.send
         end 
 
     (* Uses same identification as sender *)
@@ -208,7 +208,7 @@ structure Network : NETWORK = struct
 
     fun listen () = 
         (let 
-            val rawTap = Netif.readTap () 
+            val rawTap = Netif.receive () 
             val ethFrame = String.extract (rawTap, 0, NONE)
             val (ethHeader, ethPayload) = ethFrame |> Eth.decode 
             val Eth.Header {et, dstMac, srcMac} = ethHeader
