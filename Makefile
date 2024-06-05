@@ -34,14 +34,16 @@ FORCE: ;
 tests: unix tests/*test 
 
 %-app: $(t)
-	SML_LIB=$(SL) mlkit $(FLAGS) -no_gc -o $*.exe -libdirs "." -libs "m,c,dl,tuntaplib" $(shell pwd)/$*/main.mlb
+	SML_LIB=$(SL) mlkit $(FLAGS) -no_gc -o $*.exe -libdirs "." -libs "m,c,dl,netiflib" $(shell pwd)/$*/main.mlb
 ifeq ($(t), xen)
+	- rm -r app.a
 	- rm -r build
 	mkdir build
 	ar -x --output build XenRuntimeMini/libm.a
 	ar -x --output build XenRuntimeMini/lib/runtimeSystem.a
-	sleep 2
-	cp libtuntaplib.o $(shell cat $*.exe | cut -d " " -f2-) build
+	sleep 3
+	cp libnetiflib.a build/libnetiflib.o
+	cp $(shell cat $*.exe | cut -d " " -f2-) build
 	ar -rc app.a build/*.o
 	rm -r build
 	(cd $(MINIOS_PATH); make)
@@ -50,12 +52,11 @@ endif
 
 unix:
 	(cd UnixRuntimeMini; make)
-	gcc -I $(SL)/src/RuntimeMini -o libtuntaplib.a -c Libs/netiflib/netif-tuntap.c
+	gcc -I $(SL)/src/RuntimeMini -o libnetiflib.a -c Libs/netiflib/netif-tuntap.c
 
 xen:
 	(cd XenRuntimeMini; make)
-	gcc -fno-builtin -Wall -Wredundant-decls -Wno-format -Wno-redundant-decls -Wformat -fno-stack-protector -fgnu89-inline -Wstrict-prototypes -Wnested-externs -Wpointer-arith -Winline -g -D__INSIDE_MINIOS__ -m64 -mno-red-zone -fno-reorder-blocks -fno-asynchronous-unwind-tables -DCONFIG_START_NETWORK -DCONFIG_SPARSE_BSS -DCONFIG_BLKFRONT -DCONFIG_NETFRONT -DCONFIG_FBFRONT -DCONFIG_KBDFRONT -DCONFIG_CONSFRONT -DCONFIG_XENBUS -DCONFIG_PARAVIRT -DCONFIG_LIBXS -D__XEN_INTERFACE_VERSION__=0x00030205 -isystem XenRuntimeMini/src/RuntimeMini -isystem XenRuntimeMini/include -isystem XenRuntimeMini/include/x86 -isystem XenRuntimeMini/include/x86/x86_64 -o libtuntaplib.o -c Libs/netiflib/netif-miniOS.c
-
+	gcc -fno-builtin -Wall -Wredundant-decls -Wno-format -Wno-redundant-decls -Wformat -fno-stack-protector -fgnu89-inline -Wstrict-prototypes -Wnested-externs -Wpointer-arith -Winline -g -D__INSIDE_MINIOS__ -m64 -mno-red-zone -fno-reorder-blocks -fno-asynchronous-unwind-tables -DCONFIG_START_NETWORK -DCONFIG_SPARSE_BSS -DCONFIG_BLKFRONT -DCONFIG_NETFRONT -DCONFIG_FBFRONT -DCONFIG_KBDFRONT -DCONFIG_CONSFRONT -DCONFIG_XENBUS -DCONFIG_PARAVIRT -DCONFIG_LIBXS -D__XEN_INTERFACE_VERSION__=0x00030205 -isystem XenRuntimeMini/src/RuntimeMini -isystem XenRuntimeMini/include -isystem XenRuntimeMini/include/x86 -isystem XenRuntimeMini/include/x86/x86_64 -o libnetiflib.a -c Libs/netiflib/netif-miniOS.c
 
 clean:
 	-(cd XenRuntimeMini; make clean)
