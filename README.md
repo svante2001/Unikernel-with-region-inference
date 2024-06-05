@@ -62,15 +62,19 @@ $ echo -n “Hello, World!” | nc -u -nw1 127.0.0.2 8080
 ```
 
 ## Compilation and running a unikernel
-In order for the network to be initialized run: <br />
+In order for the network to be initialized run:
 ```sh
 $ make setup
 ```
 
 ### UNIX
-The `make` rule for compiling an application defaults to UNIX and is used with: <br />
+The `make` rule for compiling an application defaults to UNIX and is run with:
 ```sh
 $ make <application name>-app
+```
+or specified with
+```sh
+$ make t=unix <application name>-app
 ```
 
 Run the application as an executable:
@@ -79,7 +83,7 @@ $ ./<application name>.exe
 ```
 
 ### XEN
-In order to compile an application to Xen the target must be specified: <br />
+In order to compile an application to Xen the target must be specified:
 ```sh
 $ make t=xen <application name>-app
 ```
@@ -90,4 +94,6 @@ To create an application create a new directory and include two files:
 * `main.mlb` which is the ML basis file containing the applications dependencies
 
 ## Monitor network interface (tap0)
-`$ sudo tshark -i tap0` 
+```sh
+$ sudo tshark -i tap0
+``` 
