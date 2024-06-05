@@ -1,6 +1,6 @@
 MLKIT_SOURCE_RUNTIME=~/mlkit/src/Runtime 
 
-MINIOS_PATH=/home/axel/Projects/mini-os-HEAD-b6a5b4d
+MINIOS_PATH=
 
 SL=$(shell pwd)/UnixRuntimeMini
 
@@ -33,21 +33,37 @@ FORCE: ;
 
 tests: unix tests/*test 
 
-%-app: $(t)
-	SML_LIB=$(SL) mlkit $(FLAGS) -no_gc -o $*.exe -libdirs "." -libs "m,c,dl,tuntaplib" $(shell pwd)/$*/main.mlb
+%.exe: $(t)
+	SML_LIB=$(SL) mlkit $(FLAGS) -no_gc -o $*.exe -libdirs "." -libs "m,c,dl,netiflib" $(shell pwd)/$*/main.mlb
+
+.PRECIOUS: %.exe
+%-app: $(t) %.exe 
+ifeq ($(t), unix) 
+	:
+endif
+ifeq ($(t), xen)
+	- rm -r app.a
+	- rm -r build
+	mkdir build
+	ar -x --output build XenRuntimeMini/libm.a
+	ar -x --output build XenRuntimeMini/lib/runtimeSystem.a
+	cp libnetiflib.a build/libnetiflib.o
+	cp $(shell cat $*.exe | cut -d " " -f2-) build
+	ar -rc app.a build/*.o
+	rm -r build
+	(cd $(MINIOS_PATH); make)
+endif
+
+configure:
+	sed -i 's|$$(LD) -r $$(LDFLAGS) $$(HEAD_OBJ) $$(OBJS) $$(LDARCHLIB) -o $$@|$$(LD) -r $$(LDFLAGS) $$(HEAD_OBJ) $$(OBJS) $$(LDARCHLIB) $(shell pwd)/app.a -o $$@|g' $(MINIOS_PATH)/Makefile
 
 unix:
 	(cd UnixRuntimeMini; make)
-	gcc -I $(SL)/src/RuntimeMini -o libtuntaplib.a -c Libs/netiflib/netif-tuntap.c
+	gcc -I $(SL)/src/RuntimeMini -o libnetiflib.a -c Libs/netiflib/netif-tuntap.c
 
-xen-runtime:
+xen:
 	(cd XenRuntimeMini; make)
-	gcc -fno-builtin -Wall -Wredundant-decls -Wno-format -Wno-redundant-decls -Wformat -fno-stack-protector -fgnu89-inline -Wstrict-prototypes -Wnested-externs -Wpointer-arith -Winline -g -D__INSIDE_MINIOS__ -m64 -mno-red-zone -fno-reorder-blocks -fno-asynchronous-unwind-tables -DCONFIG_START_NETWORK -DCONFIG_SPARSE_BSS -DCONFIG_BLKFRONT -DCONFIG_NETFRONT -DCONFIG_FBFRONT -DCONFIG_KBDFRONT -DCONFIG_CONSFRONT -DCONFIG_XENBUS -DCONFIG_PARAVIRT -DCONFIG_LIBXS -D__XEN_INTERFACE_VERSION__=0x00030205 -isystem XenRuntimeMini/src/RuntimeMini -isystem XenRuntimeMini/include -isystem XenRuntimeMini/include/x86 -isystem XenRuntimeMini/include/x86/x86_64 -o libtuntaplib.a -c Libs/netiflib/netif-miniOS.c
-	
-# ar $(shell cat echo.exe | cut -d " " -f2-) $(shell cat echo.exe | cut -d " " -f1) libtuntaplib.a
-
-$(OBJ_DIR)/$(TARGET)-kern.o: $(OBJS) arch_lib $(OBJ_DIR)/$(TARGET_ARCH_DIR)/minios-$(MINIOS_TARGET_ARCH).lds
-	echo "hello"
+	gcc -fno-builtin -Wall -Wredundant-decls -Wno-format -Wno-redundant-decls -Wformat -fno-stack-protector -fgnu89-inline -Wstrict-prototypes -Wnested-externs -Wpointer-arith -Winline -g -D__INSIDE_MINIOS__ -m64 -mno-red-zone -fno-reorder-blocks -fno-asynchronous-unwind-tables -DCONFIG_START_NETWORK -DCONFIG_SPARSE_BSS -DCONFIG_BLKFRONT -DCONFIG_NETFRONT -DCONFIG_FBFRONT -DCONFIG_KBDFRONT -DCONFIG_CONSFRONT -DCONFIG_XENBUS -DCONFIG_PARAVIRT -DCONFIG_LIBXS -D__XEN_INTERFACE_VERSION__=0x00030205 -isystem XenRuntimeMini/src/RuntimeMini -isystem XenRuntimeMini/include -isystem XenRuntimeMini/include/x86 -isystem XenRuntimeMini/include/x86/x86_64 -o libnetiflib.a -c Libs/netiflib/netif-miniOS.c
 
 clean:
 	-(cd XenRuntimeMini; make clean)
