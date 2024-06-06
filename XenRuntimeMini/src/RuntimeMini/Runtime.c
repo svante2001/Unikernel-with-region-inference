@@ -127,10 +127,9 @@ int uncaught_exn_raised = 0;
 void
 uncaught_exception (Context ctx, String exnStr, unsigned long n, uintptr_t ep)
 {
-  printk("uncaught exception1\n");
+  printk("uncaught exception\n");
   uintptr_t a;
   ctx->uncaught_exnname = convertIntToC(n);
-  printk("uncaught exception2\n");
   
   // fputs(exnStr->data, stderr);
   
@@ -164,7 +163,6 @@ Context top_ctx;   // only for REPL
 int
 main(int argc, char *argv[])
 {
-  printk("Running in runtime2!\n");
   if ((((double)Max_Int) != Max_Int_d) || (((double)Min_Int) != Min_Int_d))
     die("main - integer configuration is erroneous");
 
