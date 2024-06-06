@@ -774,7 +774,9 @@ String
 REG_POLY_FUN_HDR(stringOfFloat, Region rAddr, size_t arg)
 {
   char buf[64];
-  sprintf(buf, "%.12g", get_d(arg));
+  // Duck-tape solution since %f format directive is not supported by mini-OS
+  double d = get_d(arg);
+  snprintf(buf, 64, "%d.%d", (int)floor(d), (int)((d - floor(d))*10000000));
   mkSMLMinus(buf);
   if( countChar('.', buf) == 0 && countChar('E', buf) == 0 && countChar('n', buf) == 0)  // protect for nan and inf
     {
