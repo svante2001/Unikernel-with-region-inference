@@ -38,9 +38,7 @@ tests: unix tests/*test
 
 .PRECIOUS: %.exe
 %-app: $(t) %.exe 
-ifeq ($(t), unix) 
 	:
-endif
 ifeq ($(t), xen)
 	- rm -r app.a
 	- rm -r build
