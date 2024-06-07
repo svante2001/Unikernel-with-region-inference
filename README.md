@@ -1,7 +1,8 @@
 # Unikernel-with-region-inference
 Bachelor thesis in Computer Science at the University of Copenhagen.
 
-## Introduction
+## Thesis
+Using region-based memory management with region inference is a feasible approach for developing unikernels that do not rely on dynamic garbage collectors, which may introduce interruptions and unnecessary memory traversals. Subsequently, the approach does not compromise memory safety or developer productivity and thus maintains the possibility of using higher-order programming languages for programming unikernels in a cloud computing setting.
 
 ## Simple example
 Here is a small example of a Unikernel service. The port `8080` is bound to a callback function which
@@ -52,12 +53,12 @@ Checksum: 30513
 The project include four small examples (these run on both Unix and Xen - see below):
 * Echo: a simple echo server that mirrors exactly what it receives
 * Facfib: serves two ports with the factorial and fibonacci functions respectively
-* MonteCarlo: estimates pi using the [sml-sobol library](https://github.com/diku-dk/sml-sobol) (run `smlpkg sync` before use). 
+* MonteCarlo: estimates pi using the [sml-sobol library](https://github.com/diku-dk/sml-sobol) (run `smlpkg sync` before use).
 * Sort: sorts its given integers using mergesort
 
 ## Sending data to the unikernel
 Once the unikernel is running one can send UDP packets to the unikernel via netcat: <br />
-```sh 
+```sh
 $ echo -n “Hello, World!” | nc -u -nw1 127.0.0.2 8080
 ```
 
@@ -90,10 +91,10 @@ $ make t=xen <application name>-app
 
 ## Creating your own application
 To create an application create a new directory and include two files:
-* `main.sml` which contains the code for the application 
+* `main.sml` which contains the code for the application
 * `main.mlb` which is the ML basis file containing the applications dependencies
 
 ## Monitor network interface (tap0)
 ```sh
 $ sudo tshark -i tap0
-``` 
+```
