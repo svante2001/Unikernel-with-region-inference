@@ -1,0 +1,4 @@
+$(SML_LIB)/basis/basis.mlb
+../Libs/utilslib/utilslib.mlb
+../Libs/networkProflib/networklib.mlb
+main.sml
