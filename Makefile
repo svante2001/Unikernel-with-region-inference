@@ -36,6 +36,9 @@ tests: unix tests/*test
 %.exe: $(t)
 	SML_LIB=$(SL) mlkit $(FLAGS) -no_gc -o $*.exe -libdirs "." -libs "m,c,dl,netiflib" $(shell pwd)/$*/main.mlb
 
+%Prof: FORCE
+	SML_LIB=~/mlkit/src/Runtime mlkit -no_gc -prof -Pcee -o $*Prof.exe $*Prof/main.mlb > out.txt
+
 .PRECIOUS: %.exe
 %-app: $(t) %.exe 
 	:

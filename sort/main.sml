@@ -32,21 +32,20 @@ fun stringToIntList s =
     end
 
 
-fun merge [] l = l
-    | merge l [] = l
-    | merge (h1::t1) (h2::t2) = if h1 < h2 then h1 :: merge t1 (h2::t2)
-                                else h2 :: merge (h1::t1) t2
+fun merge ([], l) = l
+  | merge (l, []) = l 
+  | merge ((h1::t1), (h2::t2)) = if h1 < h2 then h1 :: merge (t1, (h2::t2))
+                                else h2 :: merge ((h1::t1), t2)
+
+fun split l = 
+    let fun split [] xs ys = (xs, ys)
+          | split (x::[]) xs ys = (x::xs, ys) 
+          | split (x::y::t) xs ys = split t (x::xs) (y::ys)
+    in split l [] [] end
 
 fun mergesort [] = []
-    | mergesort [x] = [x]
-    | mergesort l = 
-    let 
-        val half = (length l) div 2
-        val p = List.take (l, half) |> mergesort
-        val q = List.drop (l, half) |> mergesort
-    in
-        merge p q
-    end
+  | mergesort [x] = [x] 
+  | mergesort l = split l |> (fn (x, y) => (mergesort x, mergesort y)) |> merge
 
 val _ = (
     bindUDP 8080 (
