@@ -131,7 +131,7 @@ String Receive(int addr, Region str_r, Context ctx) {
     // Null-terminate the buffer
     buf[bytesRead] = '\0';
 
-    return toMLString(str_r, buf+4, bytesRead-4); // For some reason we get 4 extra bytes we do not use
+    return toMLString(str_r, buf+4, bytesRead-4); 
 }
 
 void Send(uintptr_t byte_list) {
