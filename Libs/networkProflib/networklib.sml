@@ -268,13 +268,13 @@ structure Network : NETWORK = struct
 
     fun handleUDP dstMac (IPv4.Header ipv4Header) payload =
         let 
-            val (UDP.Header udpHeader, udpPayload) = payload |> UDP.decode
+            val (UDP.Header udpHeader, _) = payload |> UDP.decode
             val found = List.find (fn (port, cb) => (#dest_port udpHeader) = port) (!listenOn)
         in
             UDP.toString (UDP.Header udpHeader) |> logPrint;
             case found of 
             SOME (_, cb) => 
-                let val payload = cb udpPayload 
+                let val payload = cb (String.extract (payload, 8, NONE))
                 in  UDP.encode (UDP.Header {length = 0, 
                                             source_port = (#dest_port udpHeader), 
                                             dest_port = (#source_port udpHeader), 
@@ -293,14 +293,14 @@ structure Network : NETWORK = struct
         end
 
     fun handleIPv4 (Eth.Header ethHeader) ethFrame = 
-        let val (IPv4.Header ipv4Header, ipv4Pay) = String.extract (ethFrame, 14, NONE) |> IPv4.decode
+        let val (IPv4.Header ipv4Header, _) = String.extract (ethFrame, 14, NONE) |> IPv4.decode
             val payloadOpt = 
                 if (#fragment_offset ipv4Header) = 0 andalso (#flags ipv4Header) = 2 
-                then SOME ipv4Pay
-                else (addFragment (IPv4.Header ipv4Header) ipv4Pay; (* Assumes packets arrive in order *)
+                then SOME (String.extract (ethFrame, 34, NONE))
+                else (addFragment (IPv4.Header ipv4Header) (String.extract (ethFrame, 34, NONE)); (* Assumes packets arrive in order *)
                     if (#flags ipv4Header) = 0 
                     then ( 
-                        initAssembling (IPv4.Header ipv4Header) ipv4Pay;
+                        initAssembling (IPv4.Header ipv4Header) (String.extract (ethFrame, 34, NONE));
                         SOME (assemblePacket (IPv4.Header ipv4Header)))
                     else 
                         NONE)
@@ -318,9 +318,8 @@ structure Network : NETWORK = struct
     fun listen () = 
         if !times < !runs then (
             let 
-            val rawTap = receive () 
-            val ethFrame = String.extract (rawTap, 0, NONE)
-            val (ethHeader, ethPayload) = ethFrame |> Eth.decode 
+            val ethFrame = receive ()
+            val (ethHeader, _) = ethFrame |> Eth.decode 
             val Eth.Header {et, dstMac, srcMac} = ethHeader
         in  
             "\n==== FROM: " ^ (rawBytesString srcMac) ^ " ====\n" |> logPrint;

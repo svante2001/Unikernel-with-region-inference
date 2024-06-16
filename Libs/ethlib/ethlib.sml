@@ -38,7 +38,7 @@ structure Eth : ETH = struct
                 et = p, 
                 dstMac = String.substring (s, 0, 6) |> toByteList, 
                 srcMac = String.substring (s, 6, 6) |> toByteList
-              }, String.extract (s, 14, NONE))
+              }, "")
           | NONE => raise Fail "Protocol not found.")
 
   fun encode (Header {et, dstMac, srcMac}) payload = 

@@ -104,7 +104,7 @@ structure IPv4 : IPV4 = struct
             header_checksum = String.substring (s, 10, 2) |> convertRawBytes,
             source_addr = String.substring (s, 12, 4) |> toByteList,
             dest_addr = String.substring (s, 16, 4) |> toByteList
-        }, String.extract (s, 20, NONE))
+        }, "")
 
     fun toString (Header {
         version,

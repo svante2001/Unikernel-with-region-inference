@@ -24,7 +24,7 @@ structure UDP: UDPLIB = struct
         dest_port = String.substring (s, 2, 2) |> convertRawBytes,
         length = String.substring (s, 4, 2) |> convertRawBytes,
         checksum = String.substring (s, 6, 2) |> convertRawBytes
-    }, String.extract (s, 8, NONE))
+    }, "")
 
     fun encode (Header { length, source_port, dest_port, checksum}) data =
         (intToRawbyteString source_port 2) ^
